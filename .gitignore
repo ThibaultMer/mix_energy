@@ -1,0 +1,29 @@
+# Python 
+.venv/
+.python-version
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Data
+data/
+!data/*.gitkeep
+
+# Models
+models/
+!models/.gitkeep
+
+# Env
+.env
+.envrc
+
+# Local
+local/
+
+# vscode
+.vscode/
+
+# Mlflow
+mlruns/
+mlartifacts/
+mlflow.db
