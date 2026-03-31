@@ -9,7 +9,9 @@ readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [
     "pandas (>=3.0.1,<4.0.0)",
-    "loguru (>=0.7.3,<0.8.0)"
+    "loguru (>=0.7.3,<0.8.0)",
+    "requests (>=2.33.1,<3.0.0)",
+    "urllib3 (>=2.6.3,<3.0.0)"
 ]
 
 [tool.poetry]
@@ -20,6 +22,9 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
+test = [
+    "pytest (>=8.3.5,<9.0.0)"
+]
 docs = [
     "mkdocs (>=1.6.1,<2.0.0)"
 ]
@@ -27,3 +32,7 @@ dbt = [
     "dbt-core (>=1.11.7,<2.0.0)",
     "dbt-bigquery (>=1.11.1,<2.0.0)"
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
