@@ -1,7 +1,10 @@
 import os
 import requests
 import loguru
+import argparse
 import pandas as pd
+import google.cloud.storage as storage
+import google.oauth2.service_account as service_account
 
 logger = loguru.logger
 
@@ -60,7 +63,7 @@ def retrieve_csv(
     Parameters
     ----------
 
-    dataset_id: Dataset identifier (name of the dataset to retrieve),
+    dataset_id: Dataset identifier (name of the dataset to retrieve)
     delimiter:  Specify the field delimiter character (default = ';')
     list_sep:   Specify list separator (default = ",")
     quote_all:  All field quoted (default False)
@@ -100,6 +103,22 @@ def retrieve_csv(
 
 
 def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str = ""):
+    """
+    Select a bunch of data from a dataset ordered by the descending date and limited to 100 entries
+
+    Parameters
+    ----------
+    dataset_id: Dataset identifier (name of the dataset to retrieve)
+    field_list: List of fields we want to retrieve from the dataset (empty list by default)
+    where: condition on the selection (empty by default)
+
+    Returns
+    -------
+    JSON structure with all the entries if success
+    None otherwise
+
+    """
+
     req_url = base_url + dataset_id + "/records"
     params = {"order_by": "date desc", "limit": "100"}
 
@@ -124,6 +143,29 @@ def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str 
         return None
 
 
+def connect_to_bucket() -> storage.Bucket:
+    # Create the credential used to authenticate
+    json_credential_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    project_id = os.getenv("PROJECT_ID")
+
+    credentials = service_account.Credentials.from_service_account_file(
+        json_credential_file
+    )
+
+    logger.info("Connection to the project ")
+    client = storage.Client(project=project_id, credentials=credentials)
+
+    bucket = client.get_bucket("mix-energie-bucket")
+
+    return bucket
+
+
+def upload_data_in_bucket(bucket, data, dataset):
+    logger.info("Load data on the bucket : {}".format(dataset))
+    blob = bucket.blob(dataset + ".csv")
+    blob.upload_from_string(data)
+
+
 if __name__ == "__main__":
     dataset_list = (
         "eco2mix-national-tr",
@@ -132,21 +174,32 @@ if __name__ == "__main__":
         "eco2mix-regional-cons-def",
     )
 
-    result = retrieve_csv(dataset_id="eco2mix-national-tr")
-    if result is not None:
-        with open("temp_csv.txt", "wb") as csvfile:
-            csvfile.write(result)
+    parser = argparse.ArgumentParser(
+        description="Commmand to load dataset into a GCP Storage Bucket"
+    )
+    action_grp = parser.add_argument_group("action_group")
+    subgroup_arg = action_grp.add_mutually_exclusive_group()
+    subgroup_arg.add_argument("-csv", action="store_true", help="Load the CSV file")
+    subgroup_arg.add_argument(
+        "-sel", action="store_true", help="Select a bunch of entries in dataset"
+    )
 
-        df = pd.read_csv("temp_csv.txt", delimiter=";")
+    args = parser.parse_args()
+    print(args)
 
-        os.remove("temp_csv.txt")
-        print(df.head(5))
-    else:
-        print("Ouiiiin! CA MARCHE PAS !!!!!!!!")
+    bucket = connect_to_bucket()
 
     for dataset in dataset_list:
-        result = select_data_from_dataset(dataset)
-        if result is not None:
-            df = pd.DataFrame(result)
-            print("The 5 first element of the dataset {}".format(dataset))
-            print(df.head(5))
+        if args.csv:
+            result = retrieve_csv(dataset_id=dataset)
+            if result is not None:
+                upload_data_in_bucket(bucket, result, dataset)
+        else:
+            result = select_data_from_dataset(dataset)
+            if result is not None:
+                df = pd.DataFrame(result)
+                df.to_csv("temp_csv.csv", sep=";")
+                with open("temp_csv.txt", "r") as dataset_csv:
+                    content = dataset_csv.read()
+                    upload_data_in_bucket(bucket, content, dataset)
+                os.remove("temp_csv.txt")
