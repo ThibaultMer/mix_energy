@@ -1,12 +1,12 @@
 import os
 import requests
-import loguru
 import argparse
 import pandas as pd
-import google.cloud.storage as storage
-import google.oauth2.service_account as service_account
 
-logger = loguru.logger
+from . import get_logger
+from .gcp_utils import connect_to_bucket, upload_data_in_bucket
+
+logger = get_logger()
 
 base_url = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/"
 
@@ -143,29 +143,6 @@ def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str 
         return None
 
 
-def connect_to_bucket() -> storage.Bucket:
-    # Create the credential used to authenticate
-    json_credential_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    project_id = os.getenv("PROJECT_ID")
-
-    credentials = service_account.Credentials.from_service_account_file(
-        json_credential_file
-    )
-
-    logger.info("Connection to the project ")
-    client = storage.Client(project=project_id, credentials=credentials)
-
-    bucket = client.get_bucket("mix-energie-bucket")
-
-    return bucket
-
-
-def upload_data_in_bucket(bucket, data, dataset):
-    logger.info("Load data on the bucket : {}".format(dataset))
-    blob = bucket.blob(dataset + ".csv")
-    blob.upload_from_string(data)
-
-
 if __name__ == "__main__":
     dataset_list = (
         "eco2mix-national-tr",
@@ -198,8 +175,8 @@ if __name__ == "__main__":
             result = select_data_from_dataset(dataset)
             if result is not None:
                 df = pd.DataFrame(result)
-                df.to_csv("temp_csv.csv", sep=";")
-                with open("temp_csv.txt", "r") as dataset_csv:
+                df.to_csv(f"temp_{dataset}_csv.csv", sep=";")
+                with open(f"temp_{dataset}_csv.csv", "r") as dataset_csv:
                     content = dataset_csv.read()
                     upload_data_in_bucket(bucket, content, dataset)
-                os.remove("temp_csv.txt")
+                os.remove("temp_{dataset}_csv.csv")
