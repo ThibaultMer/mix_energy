@@ -2,7 +2,7 @@ import time
 import logging
 import pandas as pd
 import os
-from io import BytesIO
+from typing import Any, cast
 from datetime import datetime
 from google.cloud import bigquery, storage
 from google.oauth2 import service_account
@@ -15,6 +15,7 @@ PROJECT_ID = os.getenv("PROJECT_ID")
 DATASET_ID = os.getenv("DATASET_ID")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 PREFIX = os.getenv("PREFIX")
+SCHEMA_SAMPLE_ROWS = int(os.getenv("SCHEMA_SAMPLE_ROWS", "500"))
 
 
 # ─────────────────────────────────────────
@@ -55,12 +56,16 @@ def create_bigquery_schema(df: pd.DataFrame) -> list[bigquery.SchemaField]:
         col_str = str(column_name).lower()
 
         # Règles de nommage spécifiques
-        if "time" in col_str or "timestamp" in col_str:
+        if "time" in col_str or "timestamp" in col_str or "date_heure" in col_str:
             bigquery_type = "TIMESTAMP"
         elif "date" in col_str and "heure" not in col_str:
             bigquery_type = "DATE"
-        elif "heure" in col_str or "datetime" in col_str:
-            bigquery_type = "DATETIME"
+        elif "heure" in col_str:
+            bigquery_type = "STRING"
+        elif (
+            "libelle_region" in col_str or "nature" in col_str or "perimetre" in col_str
+        ):
+            bigquery_type = "STRING"
         elif pd.api.types.is_bool_dtype(dtype):
             bigquery_type = "BOOLEAN"
         elif pd.api.types.is_integer_dtype(dtype):
@@ -156,6 +161,7 @@ def load_csv_to_bigquery(
         autodetect=schema is None,
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND,  # ajout des nouvelles lignes
         field_delimiter=";",
+        null_markers=["", "NA", "N/A", "null", "NULL", "-", "ND"],
         # Optionnel : ignore les lignes mal formées (à désactiver si tu veux être strict)
         # max_bad_records=10,
     )
@@ -183,8 +189,8 @@ def load_csv_to_bigquery(
 # ─────────────────────────────────────────
 def read_csv_from_gcs(gcs_client: storage.Client, uri: str) -> pd.DataFrame:
     """
-    Lit un fichier CSV depuis GCS pour inférer le schéma.
-    - Lit le fichier COMPLET
+    Lit un échantillon d'un CSV depuis GCS pour inférer le schéma.
+    - Lit les N premières lignes (SCHEMA_SAMPLE_ROWS)
     - Gère les valeurs vides correctement
     """
     bucket_name = uri.split("/")[2]
@@ -193,15 +199,16 @@ def read_csv_from_gcs(gcs_client: storage.Client, uri: str) -> pd.DataFrame:
     bucket = gcs_client.bucket(bucket_name)
     blob = bucket.blob(blob_path)
 
-    csv_data = blob.download_as_bytes()
-    # Lire tout le fichier, pas limité à nrows
-    df = pd.read_csv(
-        BytesIO(csv_data),
-        sep=";",
-        dtype=str,  # Lire tout en string d'abord
-        keep_default_na=True,
-        na_values=["", "NA", "N/A", "null", "NULL", "-"],
-    )
+    # Lire un échantillon seulement pour accélérer l'inférence.
+    with blob.open("rt", encoding="utf-8") as csv_stream:
+        df = pd.read_csv(
+            cast(Any, csv_stream),
+            sep=";",
+            dtype=str,  # Lire tout en string d'abord
+            keep_default_na=True,
+            na_values=["", "NA", "N/A", "null", "NULL", "-", "ND"],
+            nrows=SCHEMA_SAMPLE_ROWS,
+        )
 
     # Convertir intelligemment les colonnes
     for col in df.columns:
@@ -256,23 +263,25 @@ def run_transfer():
     for blob in new_blobs:
         uri = f"gs://{BUCKET_NAME}/{blob.name}"
         filename = blob.name.split("/")[-1]  # ex : "ventes_2024.csv"
-        table_id = get_table_id(filename)
 
-        inferred_schema = None
-        df_sample = None
         try:
-            log.info(f"Inférence du schéma depuis {filename}...")
+            log.debug(f"Inférence du schéma depuis {filename}...")
             df_sample = read_csv_from_gcs(gcs_client, uri)
-            log.info(
-                f"  Fichier lu : {len(df_sample)} lignes, {len(df_sample.columns)} colonnes"
+            log.debug(
+                f"  Echantillon lu : {len(df_sample)} lignes, {len(df_sample.columns)} colonnes"
             )
             inferred_schema = create_bigquery_schema(df_sample)
-            log.info(f"✓ Schéma BigQuery généré avec {len(inferred_schema)} colonnes")
+            log.debug(f"✓ Schéma BigQuery généré avec {len(inferred_schema)} colonnes")
+            # for col in inferred_schema:
+            #     log.info(f"  - {col.name} : {col.field_type}")
         except Exception as e:
             log.warning(
                 f"Impossible d'inférer le schéma pour {filename} : {e}. Utilisation de autodetect."
             )
+            # continue
 
+        # Chargement volontairement désactivé : mode prévisualisation des schémas
+        table_id = get_table_id(filename)
         success = load_csv_to_bigquery(bq_client, uri, table_id, schema=inferred_schema)
 
         if not success and df_sample is not None:
@@ -286,6 +295,8 @@ def run_transfer():
 
         if success:
             mark_file_as_loaded(bq_client, blob.name)
+
+    log.info("Prévisualisation terminée : tous les schémas ont été affichés.")
 
 
 if __name__ == "__main__":
