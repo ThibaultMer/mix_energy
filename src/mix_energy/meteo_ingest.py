@@ -2,6 +2,11 @@ import requests
 import pandas as pd
 import loguru
 
+try:
+    from .gcp_utils import connect_to_bucket, upload_data_in_bucket
+except ImportError:
+    from .gcp_utils import connect_to_bucket, upload_data_in_bucket
+
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 latitude_paris = 48.8534
 longitude_paris = 2.3488
@@ -108,9 +113,24 @@ def save_meteo_to_csv(df: pd.DataFrame, city_name: str):
             df: DataFrame contenant les données météorologiques
             city_name: Nom de la ville pour laquelle les données sont enregistrées
     """
-    file_path = f"data/meteo/meteo_{city_name}.csv"
+
+    import os
+
+    dir_path = "data/meteo"
+    os.makedirs(dir_path, exist_ok=True)
+    file_path = f"{dir_path}/meteo_{city_name}.csv"
     df.to_csv(file_path, index=False)
     loguru.logger.info(f"Données météorologiques enregistrées dans {file_path}")
+
+    # Upload to GCP bucket
+    bucket = connect_to_bucket()
+    if bucket is not None:
+        with open(file_path, "r") as f:
+            content = f.read()
+            upload_data_in_bucket(bucket, content, f"meteo_{city_name}")
+        loguru.logger.info(f"Fichier {file_path} uploadé dans le bucket GCP.")
+    else:
+        loguru.logger.error("Impossible de se connecter au bucket GCP pour l'upload.")
 
 
 def run_ingestion() -> None:
