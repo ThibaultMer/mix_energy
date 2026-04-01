@@ -6,11 +6,15 @@ import pandas as pd
 from . import get_logger
 from .gcp_utils import connect_to_bucket, upload_data_in_bucket
 
+# ---------------------------------------------------------------------------------------
+# Globals
+# ---------------------------------------------------------------------------------------
 logger = get_logger()
 
 base_url = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/"
 
 
+# ---------------------------------------------------------------------------------------
 def __perform_request(req_url: str, params: dict):
     result = requests.get(req_url, params=params)
     match result.status_code:
@@ -50,6 +54,7 @@ def __perform_request(req_url: str, params: dict):
     return result
 
 
+# ---------------------------------------------------------------------------------------
 def retrieve_csv(
     dataset_id: str,
     delimiter: str = ";",
@@ -102,6 +107,7 @@ def retrieve_csv(
         return None
 
 
+# ---------------------------------------------------------------------------------------
 def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str = ""):
     """
     Select a bunch of data from a dataset ordered by the descending date and limited to 100 entries
@@ -143,6 +149,11 @@ def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str 
         return None
 
 
+# ---------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------
+# Direct call to the script
+# ---------------------------------------------------------------------------------------
 if __name__ == "__main__":
     dataset_list = (
         "eco2mix-national-tr",
@@ -151,6 +162,7 @@ if __name__ == "__main__":
         "eco2mix-regional-cons-def",
     )
 
+    # Manage command line arguments
     parser = argparse.ArgumentParser(
         description="Commmand to load dataset into a GCP Storage Bucket"
     )
@@ -162,9 +174,13 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print(args)
 
+    get_logger().debug(f"List of command argument {args}")
+
+    # Try to connect to the bucket
     bucket = connect_to_bucket()
+    if bucket is None:
+        exit(1)
 
     for dataset in dataset_list:
         if args.csv:
