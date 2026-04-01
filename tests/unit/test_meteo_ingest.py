@@ -3,7 +3,11 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from mix_energy.meteo_ingest import get_meteo_forecast, json_to_dataframe, save_meteo_to_csv
+from mix_energy.meteo_ingest import (
+    get_meteo_forecast,
+    json_to_dataframe,
+    save_meteo_to_csv,
+)
 
 
 class DummyResponse:
@@ -79,7 +83,7 @@ def test_save_meteo_to_csv_writes_expected_file(tmp_path, monkeypatch):
 
     save_meteo_to_csv(df, "paris")
 
-    output_file = Path("data/meteo/paris_meteo.csv")
+    output_file = Path("data/meteo/meteo_paris.csv")
     assert output_file.exists()
 
     saved_df = pd.read_csv(output_file)

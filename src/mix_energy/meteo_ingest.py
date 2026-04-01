@@ -1,11 +1,13 @@
 import requests
 import pandas as pd
-import loguru
+import os
+
+from mix_energy import get_logger
 
 try:
     from .gcp_utils import connect_to_bucket, upload_data_in_bucket
 except ImportError:
-    from .gcp_utils import connect_to_bucket, upload_data_in_bucket
+    from mix_energy.gcp_utils import connect_to_bucket, upload_data_in_bucket
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 latitude_paris = 48.8534
@@ -33,8 +35,8 @@ longitude_marseille = 5.3698
 latitude_nantes = 47.2184
 longitude_nantes = -1.5536
 
-past_days = 10
-forecast_days = 1
+past_days = os.getenv("PAST_DAYS")
+forecast_days = os.getenv("FORCAST_DAYS")
 
 CITIES = {
     "paris": (latitude_paris, longitude_paris),
@@ -50,6 +52,8 @@ CITIES = {
     "marseille": (latitude_marseille, longitude_marseille),
     "nantes": (latitude_nantes, longitude_nantes),
 }
+
+logger = get_logger()
 
 
 def get_meteo_forecast(
@@ -79,12 +83,10 @@ def get_meteo_forecast(
         response = requests.get(url, params=params)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        loguru.logger.error(
-            f"Erreur lors de la récupération des données météorologiques: {e}"
-        )
+        logger.error(f"Erreur lors de la récupération des données météorologiques: {e}")
         return {}
 
-    loguru.logger.info(f"URL: {response.url[:50]}...")
+    logger.info(f"URL: {response.url[:50]}...")
     return response.json()
 
 
@@ -120,7 +122,7 @@ def save_meteo_to_csv(df: pd.DataFrame, city_name: str):
     os.makedirs(dir_path, exist_ok=True)
     file_path = f"{dir_path}/meteo_{city_name}.csv"
     df.to_csv(file_path, index=False)
-    loguru.logger.info(f"Données météorologiques enregistrées dans {file_path}")
+    logger.info(f"Données météorologiques enregistrées dans {file_path}")
 
     # Upload to GCP bucket
     bucket = connect_to_bucket()
@@ -128,9 +130,9 @@ def save_meteo_to_csv(df: pd.DataFrame, city_name: str):
         with open(file_path, "r") as f:
             content = f.read()
             upload_data_in_bucket(bucket, content, f"meteo_{city_name}")
-        loguru.logger.info(f"Fichier {file_path} uploadé dans le bucket GCP.")
+        logger.info(f"Fichier {file_path} uploadé dans le bucket GCP.")
     else:
-        loguru.logger.error("Impossible de se connecter au bucket GCP pour l'upload.")
+        logger.error("Impossible de se connecter au bucket GCP pour l'upload.")
 
 
 def run_ingestion() -> None:
