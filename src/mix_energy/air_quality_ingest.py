@@ -73,8 +73,8 @@ def get_atmo_index(code_insee="",date_histo="",aasqa="", jwt_token=None):
 if __name__ == "__main__":
  
     # Exemple : date historique explicite
-    #data = get_atmo_index(code_insee="75056")
-    data = get_atmo_index(code_insee="75056", date_histo="2026-04-01",aasqa="75")
+    #data = get_atmo_index()
+    data = get_atmo_index(code_insee="", date_histo="2026-03-01",aasqa="44")
 
     if data and "features" in data:
         # Préparer le chemin du fichier CSV
