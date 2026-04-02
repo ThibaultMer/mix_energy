@@ -6,17 +6,15 @@ from mix_energy import get_logger
 from mix_energy.bigquery_loader import load_all_from_schemas
 from mix_energy.bigquery_schema_generator import generate_all_schemas
 
-
 # ─────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────
+
 PROJECT_ID = os.getenv("PROJECT_ID")
 DATASET_ID = os.getenv("DATASET_ID")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 PREFIX = os.getenv("PREFIX")
 SCHEMA_SAMPLE_ROWS = int(os.getenv("SCHEMA_SAMPLE_ROWS", "500"))
-
-
 log = get_logger()
 
 
@@ -44,7 +42,7 @@ def run_transfer():
         f"{len(csv_blobs)} fichier(s) CSV trouvé(s) dans gs://{BUCKET_NAME}/{PREFIX}"
     )
 
-    # 2. Traiter tous les fichiers pour supporter le mode post-initialisation
+    # 2. Traiter tous les fichiers en mode overwrite systematique
     if not csv_blobs:
         log.info("Aucun fichier CSV a charger. Fin du pipeline.")
         return

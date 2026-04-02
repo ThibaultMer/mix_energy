@@ -132,7 +132,7 @@ def create_generic_schema(df: pd.DataFrame) -> list[bigquery.SchemaField]:
 
         non_null_count = df[column_name].notna().sum()
         total_count = len(df)
-        log.info(
+        log.debug(
             "    [generic] {}: {} ({}/{} non-vides)",
             column_name,
             bigquery_type,
@@ -158,7 +158,7 @@ def create_eco2mix_schema(df: pd.DataFrame) -> list[bigquery.SchemaField]:
 
         non_null_count = df[column_name].notna().sum()
         total_count = len(df)
-        log.info(
+        log.debug(
             "    [eco2mix] {}: {} ({}/{} non-vides)",
             column_name,
             bigquery_type,
@@ -184,7 +184,7 @@ def create_meteo_schema(df: pd.DataFrame) -> list[bigquery.SchemaField]:
 
         non_null_count = df[column_name].notna().sum()
         total_count = len(df)
-        log.info(
+        log.debug(
             "    [meteo] {}: {} ({}/{} non-vides)",
             column_name,
             bigquery_type,
@@ -210,7 +210,7 @@ def create_air_quality_schema(df: pd.DataFrame) -> list[bigquery.SchemaField]:
 
         non_null_count = df[column_name].notna().sum()
         total_count = len(df)
-        log.info(
+        log.debug(
             "    [air_quality] {}: {} ({}/{} non-vides)",
             column_name,
             bigquery_type,
