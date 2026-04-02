@@ -14,8 +14,8 @@ def get_jwt_token():
     if token:
         return token
     # Sinon, tente de récupérer automatiquement le token via /api/login
-    username = os.getenv("ATMO_USERNAME") or "asticot"
-    password = os.getenv("ATMO_PASSWORD") or "p7g^2>B#vB-)jw9"
+    username = os.getenv("ATMO_USERNAME")
+    password = os.getenv("ATMO_PASSWORD")
     url = "https://admindata.atmo-france.org/api/login"
     payload = {"username": username, "password": password}
     try:
