@@ -111,6 +111,20 @@ def _resolve_meteo_type(column_name: Any, dtype: Any) -> str:
 
 
 def _resolve_air_quality_type(column_name: Any, dtype: Any) -> str:
+    if "coul_qual" in column_name.lower():
+        return "STRING"
+    if "date_maj" in column_name.lower():
+        return "TIMESTAMP"
+    if "lib_qual" in column_name.lower():
+        return "STRING"
+    if "lib_zone" in column_name.lower():
+        return "STRING"
+    if "source" in column_name.lower():
+        return "STRING"
+    if "type_zone" in column_name.lower():
+        return "STRING"
+    if "code_zone" in column_name.lower():
+        return "STRING"
     if pd.api.types.is_bool_dtype(dtype):
         return "BOOLEAN"
     if pd.api.types.is_integer_dtype(dtype):
@@ -118,7 +132,7 @@ def _resolve_air_quality_type(column_name: Any, dtype: Any) -> str:
     if pd.api.types.is_float_dtype(dtype):
         return "FLOAT"
     if pd.api.types.is_datetime64_any_dtype(dtype):
-        return "TIMESTAMP"
+        return "DATE"
     if pd.api.types.is_string_dtype(dtype) or dtype == "object":
         return "STRING"
     return "STRING"
