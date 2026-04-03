@@ -1,0 +1,20 @@
+name: 'mix_energy_dbt'          # Nom du projet dbt
+version: '1.0'                  # Version du projet
+
+profile: 'mix_energy_profile'   # Nom du profil dbt à utiliser (défini dans profiles.yml)
+models:
+  mix_energy_dbt:
+    silver:
+      +schema: SILVER
+    gold:
+      +schema: GOLD
+model-paths: ['models']         # Répertoire où se trouvent les modèles SQL
+macro-paths: ['macros']         # Répertoire pour vos macros Jinja
+#analysis-paths: ['analysis']    # Répertoire pour analyses (optionnel)
+#test-paths: ['tests']           # Répertoire pour tests (optionnel)
+seed-paths: ['data']            # Répertoire pour fichiers seed (optionnel)
+
+target-path: 'target'            # Où dbt stocke les résultats compilés
+clean-targets:
+  - 'target'
+  - 'dbt_modules'
