@@ -1,7 +1,20 @@
+variable "gcp_user_email" {
+  type        = string
+  description = "Adresse e-mail de l'utilisateur principal pour l'attribution IAM (ex: user@domaine.com)"
+}
+variable "org_id" {
+  type        = string
+  description = "ID de l'organisation GCP (ex: 123456789012)"
+}
+
+variable "billing_account" {
+  type        = string
+  description = "ID du compte de facturation GCP (ex: 01A1B2-123456-7890AB)"
+}
 variable "vm_name" {
   description = "Nom de l'instance VM"
   type        = string
-  default     = "demo-vm"
+  default     = "vm-mix-energie"
 }
 
 variable "vm_zone" {
