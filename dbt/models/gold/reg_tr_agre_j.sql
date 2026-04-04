@@ -1,13 +1,8 @@
-{{ config(
+{{ config (
     alias='reg_tr_agre_j',
     materialized='incremental',
-    unique_key='date'
+    unique_key=['date', 'code_insee_region']
 ) }}
-
-WITH latest_dates AS (
-    SELECT MAX(date) AS max_date
-    FROM {{ source('reg_source', 'eco2mix_regional_tr') }}
-)
 
 SELECT
     code_insee_region,
@@ -42,11 +37,8 @@ SELECT
     SUM(SAFE_CAST(tco_bioenergies AS FLOAT64) * SAFE_CAST(bioenergies AS FLOAT64)) / NULLIF(SUM(SAFE_CAST(bioenergies AS FLOAT64)), 0) AS tco_bioenergies,
     SUM(SAFE_CAST(tch_bioenergies AS FLOAT64) * SAFE_CAST(consommation AS FLOAT64)) / NULLIF(SUM(SAFE_CAST(consommation AS FLOAT64)), 0) AS tch_bioenergies
 FROM {{ source('reg_source', 'eco2mix_regional_tr') }}
-WHERE
     {% if is_incremental() %}
-        DATE(date) BETWEEN (SELECT DATE_SUB(max_date, INTERVAL 2 DAY) FROM latest_dates) AND (SELECT max_date FROM latest_dates)
-    {% else %}
-        1=1
+        WHERE date >= (SELECT DATE_SUB(MAX(date), INTERVAL 2 DAY) FROM {{ this }})
     {% endif %}
 GROUP BY code_insee_region, libelle_region, nature, date, annee, mois, jour
 ORDER BY date, libelle_region ASC

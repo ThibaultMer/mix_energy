@@ -1,4 +1,3 @@
--- Calcul de production journalière nationale
 {{ config(
     alias='nat_cons_agre_j',
     materialized='incremental',
@@ -45,9 +44,8 @@ sum(SAFE_CAST(bioenergies_dechets AS FLOAT64)) * 0.5 as bioenergies_dechets,
 sum(SAFE_CAST(bioenergies_biomasse AS FLOAT64)) * 0.5 as bioenergies_biomasse,
 sum(SAFE_CAST(bioenergies_biogaz AS FLOAT64)) * 0.5 as bioenergies_biogaz
 from {{ ref('eco2mix_national_cons_def_histo') }}
-group by perimetre, nature, date, annee, mois, jour
-order by date asc
-
 {% if is_incremental() %}
     WHERE date > (SELECT MAX(date) FROM {{ this }})
 {% endif %}
+group by perimetre, nature, date, annee, mois, jour
+order by date asc

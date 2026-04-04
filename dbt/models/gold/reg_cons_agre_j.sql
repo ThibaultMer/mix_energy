@@ -1,4 +1,3 @@
--- Calcul de production journalière régionale
 {{ config(
     alias='reg_cons_agre_j',
     materialized='incremental',
@@ -39,9 +38,8 @@ SUM(SAFE_CAST(tch_hydraulique AS FLOAT64) * SAFE_CAST(consommation AS FLOAT64)) 
 SUM(SAFE_CAST(tco_bioenergies AS FLOAT64) * SAFE_CAST(bioenergies AS FLOAT64)) / NULLIF(SUM(SAFE_CAST(bioenergies AS FLOAT64)), 0) AS tco_bioenergies,
 SUM(SAFE_CAST(tch_bioenergies AS FLOAT64) * SAFE_CAST(consommation AS FLOAT64)) / NULLIF(SUM(SAFE_CAST(consommation AS FLOAT64)), 0) AS tch_bioenergies
 from {{ ref('eco2mix_regional_cons_def_histo') }}
-group by code_insee_region, libelle_region, nature, date, annee, mois, jour
-order by date, libelle_region asc
-
 {% if is_incremental() %}
     WHERE date > (SELECT MAX(date) FROM {{ this }})
 {% endif %}
+group by code_insee_region, libelle_region, nature, date, annee, mois, jour
+order by date, libelle_region asc

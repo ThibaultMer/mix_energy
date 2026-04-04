@@ -4,11 +4,6 @@
     unique_key='date'
 ) }}
 
-WITH latest_dates AS (
-    SELECT MAX(date) AS max_date
-    FROM {{ source('nat_source', 'eco2mix_national_tr') }}
-)
-
 SELECT
     perimetre,
     nature,
@@ -32,7 +27,7 @@ SELECT
     SUM(SAFE_CAST(pompage AS FLOAT64)) * 0.25 AS pompage,
     SUM(SAFE_CAST(bioenergies AS FLOAT64)) * 0.25 AS bioenergies,
     SUM(SAFE_CAST(ech_physiques AS FLOAT64)) * 0.25 AS ech_physiques,
-    SUM(SAFE_CAST(taux_co2 AS FLOAT64) * (SAFE_CAST(consommation AS FLOAT64) - SAFE_CAST(pompage AS FLOAT64) - SAFE_CAST(ech_physiques AS FLOAT64))) / NULLIF(SUM(SAFE_CAST(consommation AS FLOAT64) - SAFE_CAST(pompage AS FLOAT64) - SAFE_CAST(ech_physiques AS FLOAT64)), 0)) AS taux_co2,
+    SUM(SAFE_CAST(taux_co2 AS FLOAT64) * (SAFE_CAST(consommation AS FLOAT64) - SAFE_CAST(pompage AS FLOAT64) - SAFE_CAST(ech_physiques AS FLOAT64))) / NULLIF(SUM(SAFE_CAST(consommation AS FLOAT64) - SAFE_CAST(pompage AS FLOAT64) - SAFE_CAST(ech_physiques AS FLOAT64)), 0) AS taux_co2,
     SUM(SAFE_CAST(ech_comm_angleterre AS FLOAT64)) * 0.25 AS ech_comm_angleterre,
     SUM(SAFE_CAST(ech_comm_espagne AS FLOAT64)) * 0.25 AS ech_comm_espagne,
     SUM(SAFE_CAST(ech_comm_italie AS FLOAT64)) * 0.25 AS ech_comm_italie,
@@ -54,11 +49,8 @@ SELECT
     SUM(SAFE_CAST(stockage_batterie AS FLOAT64)) * 0.25 AS stockage_batterie,
     SUM(SAFE_CAST(destockage_batterie AS FLOAT64)) * 0.25 AS destockage_batterie
 FROM {{ source('nat_source', 'eco2mix_national_tr') }}
-WHERE
     {% if is_incremental() %}
-        DATE(date) BETWEEN (SELECT DATE_SUB(max_date, INTERVAL 2 DAY) FROM latest_dates) AND (SELECT max_date FROM latest_dates)
-    {% else %}
-        1=1
+        WHERE date >= (SELECT DATE_SUB(MAX(date), INTERVAL 2 DAY) FROM {{ this }})
     {% endif %}
 GROUP BY perimetre, nature, date, annee, mois, jour
 ORDER BY date ASC
