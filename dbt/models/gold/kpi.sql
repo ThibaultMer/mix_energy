@@ -3,7 +3,7 @@
     materialized='table')
     }}
 
-select 
+select
 SUM(production) AS production_totale,
 SUM(nucleaire) / SUM(production) AS pct_nucleaire,
 SUM(fioul + charbon + gaz) / SUM(production) AS pct_thermique,

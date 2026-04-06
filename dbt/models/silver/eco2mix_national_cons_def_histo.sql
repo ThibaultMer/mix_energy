@@ -4,7 +4,7 @@
     unique_key='date'
 ) }}
 
-SELECT 
+SELECT
 perimetre       AS perimetre,
 nature          AS nature,
 date            AS date,
