@@ -1,0 +1,27 @@
+[project]
+name = "predict"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Xavier Filaire",email = "xfilairepro@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "scikit-learn (>=1.8.0,<2.0.0)",
+    "loguru (>=0.7.3,<0.8.0)",
+    "mlflow (>=3.10.1,<4.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "predict", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+test = [
+    "hypothesis (>=6.151.11,<7.0.0)",
+    "pytest (>=9.0.2,<10.0.0)"
+]
