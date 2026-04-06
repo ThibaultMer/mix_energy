@@ -47,14 +47,7 @@ def _filter_csv_blobs_by_filename_prefix(
     return filtered_blobs
 
 
-def run_transfer(file_prefix: str | None = None):
-    if not PROJECT_ID or not DATASET_ID or not BUCKET_NAME:
-        raise ValueError(
-            "PROJECT_ID, DATASET_ID et BUCKET_NAME doivent etre definis dans l'environnement"
-        )
-
-    file_prefix = file_prefix
-
+def _build_clients_from_local_credentials():
     json_credentials_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if not json_credentials_file:
         raise ValueError("GOOGLE_APPLICATION_CREDENTIALS doit etre defini")
@@ -62,8 +55,25 @@ def run_transfer(file_prefix: str | None = None):
     credentials = service_account.Credentials.from_service_account_file(
         json_credentials_file
     )
-    bq_client = bigquery.Client(project=PROJECT_ID, credentials=credentials)
-    gcs_client = storage.Client(project=PROJECT_ID, credentials=credentials)
+    return (
+        bigquery.Client(project=PROJECT_ID, credentials=credentials),
+        storage.Client(project=PROJECT_ID, credentials=credentials),
+    )
+
+
+def run_transfer(
+    file_prefix: str | None = None,
+    bq_client: bigquery.Client | None = None,
+    gcs_client: storage.Client | None = None,
+):
+    if not PROJECT_ID or not DATASET_ID or not BUCKET_NAME:
+        raise ValueError(
+            "PROJECT_ID, DATASET_ID et BUCKET_NAME doivent etre definis dans l'environnement"
+        )
+
+    if bq_client is None or gcs_client is None:
+        bq_client, gcs_client = _build_clients_from_local_credentials()
+
     bucket = gcs_client.bucket(BUCKET_NAME)
 
     # 1. Lister les CSV dans le bucket

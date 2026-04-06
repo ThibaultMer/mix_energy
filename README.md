@@ -1,6 +1,21 @@
 Airflow install
 
-#Récupérer le docker contenant airflow
-docker pull apache/airflow:3.1.8
-#le docker compose est déjà dans  le repo dans le dossier airflow
-docker compose -f airflow/docker-compose.yaml up airflow-init
+Prerequisites
+- Docker and Docker Compose installed.
+- Copy the shared environment template:
+	cp .env.copy .env
+
+Configure your local user IDs in .env (Linux)
+- AIRFLOW_UID must match your host user ID.
+- Commands to get them:
+	id -u
+
+Start Airflow
+- Build/start initialization:
+	docker compose -f airflow/docker-compose.yaml up airflow-init
+- Start the full stack:
+	docker compose -f airflow/docker-compose.yaml up -d --build
+
+Notes
+- This UID setup prevents permission issues on mounted folders (airflow/dags, airflow/logs, airflow/config, airflow/plugins).
+- Airflow API/UI is exposed on localhost:8081.

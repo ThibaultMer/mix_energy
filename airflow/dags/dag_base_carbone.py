@@ -6,31 +6,25 @@ from typing import Any
 
 from airflow.sdk import dag, task
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.timetables.trigger import MultipleCronTriggerTimetable
 
+from mix_energy.base_carbone_ingest import get_base_carbone
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
-from mix_energy.eco2mix_ingest import retrieve_csv as _retrieve_csv
 
-DATASET_ID = "eco2mix-national-cons-def"
-FILE_PREFIX = "eco2mix-national-cons-def"
+DATASET_ID = "base-carbone"
+FILE_PREFIX = "base-carbone"
 GCP_CONN_ID = "google_cloud_default"
 BUCKET_NAME = os.getenv("BUCKET_NAME", "mix-energie-bucket")
 
 
 @dag(
-    dag_id="dag_eco2mix_national_cons_def",
-    description="Ingestion eco2mix national cons-def vers GCS.",
+    dag_id="dag_base_carbone",
+    description="Ingestion base carbone vers GCS.",
     start_date=datetime(2026, 1, 1),
-    schedule=MultipleCronTriggerTimetable(
-        "30 9 20 * 1-5",
-        "30 9 21 * 1",
-        "30 9 22 * 1",
-        timezone="Europe/Paris",
-    ),
+    schedule="30 9 1 * 1-5",
     catchup=False,
-    tags=["eco2mix", "ingestion"],
+    tags=["base-carbone", "ingestion"],
 )
-def dag_eco2mix_national_cons_def():
+def dag_base_carbone():
     @task(task_id="check_bucket_connection")
     def check_bucket_connection() -> str:
         hook = GCSHook(gcp_conn_id=GCP_CONN_ID)
@@ -42,14 +36,14 @@ def dag_eco2mix_national_cons_def():
         return BUCKET_NAME
 
     @task(task_id="ingest_csv_to_bucket")
-    def ingest_csv_to_bucket(bucket_name: str, dataset_id: str) -> None:
-        csv_content = _retrieve_csv(dataset_id=dataset_id)
-        if csv_content is None:
-            raise RuntimeError(f"Recuperation CSV echouee pour {dataset_id}.")
+    def ingest_csv_to_bucket(bucket_name: str) -> None:
+        df = get_base_carbone()
+        if df is None or df.empty:
+            raise RuntimeError("Recuperation base carbone echouee.")
 
-        csv_size = len(csv_content)
-        if csv_size == 0:
-            raise RuntimeError(f"CSV vide recupere pour {dataset_id}.")
+        csv_content = df.to_csv(index=False, sep=";").encode("utf-8")
+        if len(csv_content) == 0:
+            raise RuntimeError("CSV vide recupere pour base-carbone.")
 
         if BUCKET_NAME != bucket_name:
             raise RuntimeError(
@@ -59,21 +53,20 @@ def dag_eco2mix_national_cons_def():
         hook = GCSHook(gcp_conn_id=GCP_CONN_ID)
         hook.upload(
             bucket_name=bucket_name,
-            object_name=f"{dataset_id}.csv",
+            object_name=f"{DATASET_ID}.csv",
             data=csv_content,
         )
 
     @task(task_id="transfer_csv_to_bigquery")
-    def transfer_csv_from_bucket_to_bigquery(file_prefix: str) -> None:
-        _run_transfer(file_prefix=file_prefix, gcp_conn_id=GCP_CONN_ID)
+    def transfer_csv_from_bucket_to_bigquery() -> None:
+        _run_transfer(file_prefix=FILE_PREFIX, gcp_conn_id=GCP_CONN_ID)
 
     check_bucket_connection_task: Any = check_bucket_connection()
     ingest_csv_to_bucket_task: Any = ingest_csv_to_bucket(
         bucket_name=check_bucket_connection_task,
-        dataset_id=DATASET_ID,
     )
     transfer_csv_from_bucket_to_bigquery_task: Any = (
-        transfer_csv_from_bucket_to_bigquery(file_prefix=FILE_PREFIX)
+        transfer_csv_from_bucket_to_bigquery()
     )
 
     (
@@ -83,4 +76,4 @@ def dag_eco2mix_national_cons_def():
     )
 
 
-dag = dag_eco2mix_national_cons_def()
+dag = dag_base_carbone()

@@ -11,26 +11,26 @@ from airflow.timetables.trigger import MultipleCronTriggerTimetable
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
 from mix_energy.eco2mix_ingest import retrieve_csv as _retrieve_csv
 
-DATASET_ID = "eco2mix-national-cons-def"
-FILE_PREFIX = "eco2mix-national-cons-def"
+DATASET_ID = "eco2mix-national-tr"
+FILE_PREFIX = "eco2mix-national-tr"
 GCP_CONN_ID = "google_cloud_default"
 BUCKET_NAME = os.getenv("BUCKET_NAME", "mix-energie-bucket")
 
 
 @dag(
-    dag_id="dag_eco2mix_national_cons_def",
-    description="Ingestion eco2mix national cons-def vers GCS.",
+    dag_id="dag_eco2mix_national_tr",
+    description="Ingestion eco2mix national tr vers GCS.",
     start_date=datetime(2026, 1, 1),
     schedule=MultipleCronTriggerTimetable(
-        "30 9 20 * 1-5",
-        "30 9 21 * 1",
-        "30 9 22 * 1",
+        "30,45 9 * * 1-5",
+        "0,15,30,45 10-17 * * 1-5",
+        "0,15,30 18 * * 1-5",
         timezone="Europe/Paris",
     ),
     catchup=False,
     tags=["eco2mix", "ingestion"],
 )
-def dag_eco2mix_national_cons_def():
+def dag_eco2mix_national_tr():
     @task(task_id="check_bucket_connection")
     def check_bucket_connection() -> str:
         hook = GCSHook(gcp_conn_id=GCP_CONN_ID)
@@ -83,4 +83,4 @@ def dag_eco2mix_national_cons_def():
     )
 
 
-dag = dag_eco2mix_national_cons_def()
+dag = dag_eco2mix_national_tr()
