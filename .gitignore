@@ -1,4 +1,4 @@
-# Python 
+# Python
 .venv/
 .python-version
 .ipynb_checkpoints/
@@ -28,3 +28,7 @@ local/
 mlruns/
 mlartifacts/
 mlflow.db
+
+# Airflow
+airflow/config/
+airflow/logs/
