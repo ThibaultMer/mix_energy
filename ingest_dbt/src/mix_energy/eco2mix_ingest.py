@@ -143,7 +143,7 @@ def select_data_from_dataset(dataset_id: str, field_list: list = (), where: str 
             return result["results"]
         else:
             logger.error(
-                "Unexpected data received : {}".format(result.headers["content-type"])
+                "Unexpected data received : {}".format(response.headers["content-type"])
             )
     else:
         return None
