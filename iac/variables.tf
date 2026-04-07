@@ -46,7 +46,35 @@ variable "location" {
   default     = "EU"
 }
 
+variable "artifact_registry_location" {
+  type        = string
+  description = "Region used for Artifact Registry repositories."
+  default     = "europe-west1"
+}
+
 variable "project_id" {
   type        = string
   description = "GCP project id where the resources will be created into."
+}
+
+variable "project_name" {
+  type        = string
+  description = "Human-readable GCP project name."
+}
+
+variable "project_bucket_name" {
+  type        = string
+  description = "Bucket name managed in the target project."
+}
+
+variable "bootstrap_only" {
+  type        = bool
+  description = "When true, only create the GCP project and required APIs."
+  default     = false
+}
+
+variable "create_demo_resources" {
+  type        = bool
+  description = "When true, create the demo BigQuery dataset and table used for Terraform smoke tests."
+  default     = true
 }

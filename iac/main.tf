@@ -1,125 +1,401 @@
-# Dataset BigQuery gold
-resource "google_bigquery_dataset" "gold_dataset_mix_energie" {
-  dataset_id     = "gold_mix_energie"
-  location       = var.location
-  friendly_name  = "Dataset gold mix-energie"
-  description    = "Dataset gold pour le projet mix-energie."
-  project        = var.project_id
-  delete_contents_on_destroy = true
+locals {
+  project_bucket_name = var.project_bucket_name
+  bucket_location     = "EU"
 }
-# Dataset BigQuery silver
-resource "google_bigquery_dataset" "silver_dataset_mix_energie" {
-  dataset_id     = "silver_mix_energie"
-  location       = var.location
-  friendly_name  = "Dataset silver mix-energie"
-  description    = "Dataset silver pour le projet mix-energie."
-  project        = var.project_id
-  delete_contents_on_destroy = true
-}
-# Activation de l'API Vertex AI
-resource "google_project_service" "vertex_ai" {
-  project = google_project.mix_energie_gcp.project_id
-  service = "aiplatform.googleapis.com"
-}
-# Attribution du rôle Storage Object Admin au service account FastAPI
-resource "google_storage_bucket_iam_member" "fastapi_mix_energie_object_admin" {
-  bucket = google_storage_bucket.mix_energie_bucket.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.fastapi_mix_energie.email}"
-}
-# Message d'instructions pour l'utilisateur
-output "instructions_service_account_admin" {
-  value = <<EOT
-⚠️ La première exécution de 'terraform apply' peut échouer avec une erreur de permission lors de la création des comptes de service.
-Ce comportement est normal : le rôle 'Service Account Admin' vient d'être attribué à votre utilisateur.
-Relancez simplement 'terraform apply -auto-approve -var-file="auto.tfvars"' une seconde fois pour poursuivre le déploiement.
-EOT
-}
-# Attribution automatique du rôle Service Account Admin à l'utilisateur principal
-resource "google_project_iam_member" "self_service_account_admin" {
-  project = google_project.mix_energie_gcp.project_id
-  role    = "roles/iam.serviceAccountAdmin"
-  member  = "user:${var.gcp_user_email}"
-}
-# Création automatique du projet GCP et activation des APIs
+
 resource "google_project" "mix_energie_gcp" {
-  name            = "mix-energie-gcp2"
-  project_id      = "mix-energie-gcp2-492212"
-  org_id          = "1064330306973" # Remplacez par votre org_id numérique si besoin
-  billing_account = "01FE1B-B3B34E-92A1B4" # Remplacez par votre compte de facturation
+  name                = var.project_name
+  project_id          = var.project_id
+  org_id              = var.org_id
+  billing_account     = var.billing_account
   auto_create_network = true
 }
 
 resource "google_project_service" "compute" {
-  project = google_project.mix_energie_gcp.project_id
-  service = "compute.googleapis.com"
+  project            = google_project.mix_energie_gcp.project_id
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project.mix_energie_gcp]
 }
 
 resource "google_project_service" "bigquery" {
-  project = google_project.mix_energie_gcp.project_id
-  service = "bigquery.googleapis.com"
+  project            = google_project.mix_energie_gcp.project_id
+  service            = "bigquery.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project.mix_energie_gcp]
 }
 
 resource "google_project_service" "storage" {
+  project            = google_project.mix_energie_gcp.project_id
+  service            = "storage.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project.mix_energie_gcp]
+}
+
+resource "google_project_service" "vertex_ai" {
+  project            = google_project.mix_energie_gcp.project_id
+  service            = "aiplatform.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project.mix_energie_gcp]
+}
+
+resource "google_project_service" "artifact_registry" {
+  project            = google_project.mix_energie_gcp.project_id
+  service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project.mix_energie_gcp]
+}
+
+resource "google_project_iam_member" "self_service_account_admin" {
+  count   = var.bootstrap_only ? 0 : 1
   project = google_project.mix_energie_gcp.project_id
-  service = "storage.googleapis.com"
+  role    = "roles/iam.serviceAccountAdmin"
+  member  = "user:${var.gcp_user_email}"
+
+  depends_on = [
+    google_project.mix_energie_gcp,
+    google_project_service.compute,
+    google_project_service.bigquery,
+    google_project_service.storage,
+    google_project_service.vertex_ai,
+    google_project_service.artifact_registry,
+  ]
 }
-# Dataset BigQuery principal
-resource "google_bigquery_dataset" "mix_energie_dataset" {
-  dataset_id     = "bronze_mix_energie"
-  location       = var.location
-  friendly_name  = "Dataset principal mix-energie"
-  description    = "Dataset principal pour le projet mix-energie."
-  project        = var.project_id
-  delete_contents_on_destroy = true
-}
-# Droit d'écriture BigQuery pour import-mix-energie
-resource "google_project_iam_member" "import_mix_energie_bigquery_editor" {
-  project = var.project_id
-  role    = "roles/bigquery.dataEditor"
-  member  = "serviceAccount:${google_service_account.import_mix_energie.email}"
-}
-# Service account pour l'import avec droit écriture sur le bucket
+
 resource "google_service_account" "import_mix_energie" {
+  count        = var.bootstrap_only ? 0 : 1
+  project      = google_project.mix_energie_gcp.project_id
   account_id   = "import-mix-energie"
-  description  = "Service account pour l'import, avec droit écriture sur le bucket mix-energie-bucket."
+  description  = "Service account pour l'import, avec droit ecriture sur le bucket mix-energie-bucket."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_service_account" "fastapi_mix_energie" {
+  count        = var.bootstrap_only ? 0 : 1
+  project      = google_project.mix_energie_gcp.project_id
+  account_id   = "fastapi-mix-energie"
+  description  = "Service account dedie a l'application FastAPI mix-energie."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_service_account" "bucket_mix_energie" {
+  count        = var.bootstrap_only ? 0 : 1
+  project      = google_project.mix_energie_gcp.project_id
+  account_id   = "bucket-mix-energie"
+  description  = "Service account dedie au bucket mix-energie-bucket."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_service_account" "mix_energie_bigquery" {
+  count       = var.bootstrap_only ? 0 : 1
+  project     = google_project.mix_energie_gcp.project_id
+  account_id  = "bigquery-mix-energie"
+  description = "Service account pour BigQuery avec droits BigQuery Admin."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_service_account" "airflow_mix_energie" {
+  count                        = var.bootstrap_only ? 0 : 1
+  project                      = google_project.mix_energie_gcp.project_id
+  account_id                   = "airflow-mix-energie"
+  description                  = "Service account dedie a Airflow pour consommer les artefacts du projet."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_service_account" "vm_mix_energie" {
+  count                        = var.bootstrap_only ? 0 : 1
+  project                      = google_project.mix_energie_gcp.project_id
+  account_id                   = "vm-mix-energie"
+  description                  = "Service account dedie a la VM pour lire Artifact Registry."
+
+  depends_on = [google_project_iam_member.self_service_account_admin]
+}
+
+resource "google_artifact_registry_repository" "docker" {
+  count         = var.bootstrap_only ? 0 : 1
+  location      = var.artifact_registry_location
+  project       = google_project.mix_energie_gcp.project_id
+  repository_id = "mix-energie-docker"
+  description   = "Depot Artifact Registry pour les images Docker du projet."
+  format        = "DOCKER"
+
+  depends_on = [google_project_service.artifact_registry]
+}
+
+resource "google_artifact_registry_repository" "standard" {
+  count         = var.bootstrap_only ? 0 : 1
+  location      = var.artifact_registry_location
+  project       = google_project.mix_energie_gcp.project_id
+  repository_id = "mix-energie-python"
+  description   = "Depot Artifact Registry Python pour les packages du projet."
+  format        = "PYTHON"
+
+  depends_on = [google_project_service.artifact_registry]
+}
+
+resource "google_artifact_registry_repository_iam_member" "airflow_docker_reader" {
+  count      = var.bootstrap_only ? 0 : 1
+  project    = google_project.mix_energie_gcp.project_id
+  location   = google_artifact_registry_repository.docker[0].location
+  repository = google_artifact_registry_repository.docker[0].name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_service_account.airflow_mix_energie,
+    google_artifact_registry_repository.docker,
+  ]
+}
+
+resource "google_artifact_registry_repository_iam_member" "airflow_docker_writer" {
+  count      = var.bootstrap_only ? 0 : 1
+  project    = google_project.mix_energie_gcp.project_id
+  location   = google_artifact_registry_repository.docker[0].location
+  repository = google_artifact_registry_repository.docker[0].name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_service_account.airflow_mix_energie,
+    google_artifact_registry_repository.docker,
+  ]
+}
+
+resource "google_artifact_registry_repository_iam_member" "airflow_standard_reader" {
+  count      = var.bootstrap_only ? 0 : 1
+  project    = google_project.mix_energie_gcp.project_id
+  location   = google_artifact_registry_repository.standard[0].location
+  repository = google_artifact_registry_repository.standard[0].name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_service_account.airflow_mix_energie,
+    google_artifact_registry_repository.standard,
+  ]
+}
+
+resource "google_artifact_registry_repository_iam_member" "airflow_standard_writer" {
+  count      = var.bootstrap_only ? 0 : 1
+  project    = google_project.mix_energie_gcp.project_id
+  location   = google_artifact_registry_repository.standard[0].location
+  repository = google_artifact_registry_repository.standard[0].name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_service_account.airflow_mix_energie,
+    google_artifact_registry_repository.standard,
+  ]
+}
+
+resource "google_storage_bucket" "mix_energie_bucket" {
+  count                       = var.bootstrap_only ? 0 : 1
+  name                        = local.project_bucket_name
+  location                    = local.bucket_location
+  project                     = google_project.mix_energie_gcp.project_id
+  uniform_bucket_level_access = true
+
+  depends_on = [google_project_service.storage]
+}
+
+resource "google_storage_bucket_iam_member" "fastapi_mix_energie_object_admin" {
+  count  = var.bootstrap_only ? 0 : 1
+  bucket = google_storage_bucket.mix_energie_bucket[0].name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.fastapi_mix_energie[0].email}"
+
+  depends_on = [
+    google_storage_bucket.mix_energie_bucket,
+    google_service_account.fastapi_mix_energie,
+  ]
 }
 
 resource "google_storage_bucket_iam_member" "import_mix_energie_writer" {
-  bucket = google_storage_bucket.mix_energie_bucket.name
+  count  = var.bootstrap_only ? 0 : 1
+  bucket = google_storage_bucket.mix_energie_bucket[0].name
   role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.import_mix_energie.email}"
-}
-# Service account pour FastAPI
-resource "google_service_account" "fastapi_mix_energie" {
-  account_id   = "fastapi-mix-energie"
-  description  = "Service account dédié à l'application FastAPI mix-energie."
-}
-# Service account pour le bucket GCS
-resource "google_service_account" "bucket_mix_energie" {
-  account_id   = "bucket-mix-energie"
-  description  = "Service account dédié au bucket mix-energie-bucket."
+  member = "serviceAccount:${google_service_account.import_mix_energie[0].email}"
+
+  depends_on = [
+    google_storage_bucket.mix_energie_bucket,
+    google_service_account.import_mix_energie,
+  ]
 }
 
-# Attribution du rôle Storage Admin au service account sur le bucket
 resource "google_storage_bucket_iam_member" "bucket_mix_energie_admin" {
-  bucket = google_storage_bucket.mix_energie_bucket.name
+  count  = var.bootstrap_only ? 0 : 1
+  bucket = google_storage_bucket.mix_energie_bucket[0].name
   role   = "roles/storage.admin"
-  member = "serviceAccount:${google_service_account.bucket_mix_energie.email}"
+  member = "serviceAccount:${google_service_account.bucket_mix_energie[0].email}"
+
+  depends_on = [
+    google_storage_bucket.mix_energie_bucket,
+    google_service_account.bucket_mix_energie,
+  ]
 }
-# Bucket GCS pour stockage des données
-resource "google_storage_bucket" "mix_energie_bucket" {
-  name     = "mix-energie-bucket-492212"
-  location = var.location
-  project  = var.project_id
-  force_destroy = true
-  uniform_bucket_level_access = true
+
+resource "google_project_iam_member" "import_mix_energie_bigquery_editor" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.import_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.bigquery,
+    google_service_account.import_mix_energie,
+  ]
 }
+
+resource "google_project_iam_member" "mix_energie_bigquery_admin" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/bigquery.admin"
+  member  = "serviceAccount:${google_service_account.mix_energie_bigquery[0].email}"
+
+  depends_on = [
+    google_project_service.bigquery,
+    google_service_account.mix_energie_bigquery,
+  ]
+}
+
+resource "google_project_iam_member" "airflow_bigquery_data_editor" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.bigquery,
+    google_service_account.airflow_mix_energie,
+  ]
+}
+
+resource "google_project_iam_member" "airflow_bigquery_job_user" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.bigquery,
+    google_service_account.airflow_mix_energie,
+  ]
+}
+
+resource "google_project_iam_member" "airflow_storage_object_admin" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.storage,
+    google_service_account.airflow_mix_energie,
+  ]
+}
+
+resource "google_project_iam_member" "airflow_storage_object_viewer" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.airflow_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.storage,
+    google_service_account.airflow_mix_energie,
+  ]
+}
+
+resource "google_project_iam_member" "vm_artifact_registry_reader" {
+  count   = var.bootstrap_only ? 0 : 1
+  project = google_project.mix_energie_gcp.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.vm_mix_energie[0].email}"
+
+  depends_on = [
+    google_project_service.artifact_registry,
+    google_service_account.vm_mix_energie,
+  ]
+}
+
+resource "google_bigquery_dataset" "mix_energie_dataset" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "mix_energie_bronze"
+  location                   = var.location
+  friendly_name              = "mix-energie-bronze"
+  description                = "Dataset bronze pour le projet mix-energie."
+  project                    = google_project.mix_energie_gcp.project_id
+
+  depends_on = [google_project_service.bigquery]
+}
+
+resource "google_bigquery_dataset" "silver_dataset_mix_energie" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "mix_energie_silver"
+  location                   = var.location
+  friendly_name              = "mix-energie-silver"
+  description                = "Dataset silver pour le projet mix-energie."
+  project                    = google_project.mix_energie_gcp.project_id
+
+  depends_on = [google_project_service.bigquery]
+}
+
+resource "google_bigquery_dataset" "gold_dataset_mix_energie" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "mix_energie_gold"
+  location                   = var.location
+  friendly_name              = "mix-energie-gold"
+  description                = "Dataset gold pour le projet mix-energie."
+  project                    = google_project.mix_energie_gcp.project_id
+
+  depends_on = [google_project_service.bigquery]
+}
+
+resource "google_bigquery_dataset" "demo_dataset" {
+  count                      = var.bootstrap_only || !var.create_demo_resources ? 0 : 1
+  dataset_id                 = "demo_dataset_${terraform.workspace}"
+  location                   = var.location
+  friendly_name              = "Demo Dataset ${terraform.workspace}"
+  description                = "Dataset jetable pour demo Terraform."
+  project                    = google_project.mix_energie_gcp.project_id
+
+  depends_on = [google_project_service.bigquery]
+}
+
+resource "google_bigquery_table" "demo_table" {
+  count      = var.bootstrap_only || !var.create_demo_resources ? 0 : 1
+  project    = google_project.mix_energie_gcp.project_id
+  dataset_id = google_bigquery_dataset.demo_dataset[0].dataset_id
+  table_id   = "demo_table_${terraform.workspace}"
+  schema     = <<EOF
+[
+  {"name": "id", "type": "STRING", "mode": "REQUIRED"},
+  {"name": "value", "type": "INTEGER", "mode": "NULLABLE"}
+]
+EOF
+
+  depends_on = [google_bigquery_dataset.demo_dataset]
+}
+
 resource "google_compute_instance" "vm_mix_energie" {
-  name         = "vm-mix-energie"
-  machine_type = var.vm_machine_type
-  zone         = var.vm_zone
-  project      = google_project.mix_energie_gcp.project_id
+  count                     = var.bootstrap_only ? 0 : 1
+  allow_stopping_for_update = true
+  name                      = var.vm_name
+  machine_type              = var.vm_machine_type
+  zone                      = var.vm_zone
+  project                   = google_project.mix_energie_gcp.project_id
+  deletion_protection = false
 
   boot_disk {
     initialize_params {
@@ -133,36 +409,19 @@ resource "google_compute_instance" "vm_mix_energie" {
     }
   }
 
+  service_account {
+    email  = google_service_account.vm_mix_energie[0].email
+    scopes = ["cloud-platform"]
+  }
+
   tags = ["demo"]
-}
-resource "google_service_account" "mix_energie_bigquery" {
-  account_id  = "bigquery-mix-energie"
-  description = "Service account pour BigQuery avec droits BigQuery Admin."
-}
 
-resource "google_bigquery_dataset" "demo_dataset" {
-  dataset_id                  = "demo_dataset_${terraform.workspace}"
-  location                    = var.location
-  friendly_name               = "Demo Dataset ${terraform.workspace}"
-  description                 = "Dataset jetable pour démo Terraform."
-  delete_contents_on_destroy  = true
+  depends_on = [
+    google_project_service.compute,
+    google_project_iam_member.vm_artifact_registry_reader,
+  ]
 }
 
-resource "google_project_iam_member" "mix_energie_bigquery_admin" {
-  project = var.project_id
-  role    = "roles/bigquery.admin"
-  member  = "serviceAccount:${google_service_account.mix_energie_bigquery.email}"
-}
-
-
-# Optionnel : exemple de table jetable
-resource "google_bigquery_table" "demo_table" {
-  dataset_id = google_bigquery_dataset.demo_dataset.dataset_id
-  table_id   = "demo_table_${terraform.workspace}"
-  schema     = <<EOF
-[
-  {"name": "id", "type": "STRING", "mode": "REQUIRED"},
-  {"name": "value", "type": "INTEGER", "mode": "NULLABLE"}
-]
-EOF
+output "instructions_service_account_admin" {
+  value = var.bootstrap_only ? "Phase bootstrap terminee.\n\nEtape suivante:\n1. Verifiez que ${var.gcp_user_email} a le role Owner sur le projet ${var.project_id}.\n2. Relancez Terraform avec bootstrap_only=false pour creer les comptes de service, le bucket, les datasets et la VM." : "Deploiement complet termine.\nSi une erreur IAM apparait pendant la phase complete, verifiez que ${var.gcp_user_email} est bien Owner du projet ${var.project_id} puis relancez la commande."
 }
