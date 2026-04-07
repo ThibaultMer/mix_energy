@@ -1,3 +1,5 @@
+import pandas as pd
+
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import (
     mean_absolute_error,
@@ -6,6 +8,7 @@ from sklearn.metrics import (
     r2_score,
 )
 import predict.mllogs as pmllog
+from predict.preproc import build_pipeline
 
 
 class Energypredict:
@@ -17,12 +20,19 @@ class Energypredict:
 
     def create_model(self) -> None:
         self.__model = LinearRegression()
+        self.__mllogger.log_hyperparams(self.__model.get_params())
 
-    def preproc_data(self, preproc, X_train, X_test):
-        preproc.fit(X_train)
-        X_train_scaled = preproc.transform(X_train)
-        X_test_scaled = preproc.transform(X_test)
-        return X_train_scaled, X_test_scaled
+    def preprocess_data(self, X: pd.DataFrame, train: bool = True) -> pd.DataFrame:
+        # Instantier la pipeline
+        if train:
+            preprocessor = build_pipeline()
+            preprocessor.fit(X)
+            self.__mllogger.save_model(preprocessor, "preprocessor")
+        else:
+            preprocessor = self.__mllogger.load_model("preprocessor")
+        df_preprocessed = preprocessor.transform(X)
+        # logger.info(f"Preprocessed the diamonds dataset: {X.shape} -> {df_preprocessed.shape}")
+        return df_preprocessed
 
     def train_model(self, X_train, y_train) -> None:
         """Train the model in place and save it."""
@@ -42,6 +52,9 @@ class Energypredict:
         self.__mllogger.log_metrics(metrics)
 
         return metrics
+
+    def predict(self, input_vals):
+        return self.__model.predict(input_vals)
 
 
 if __name__ == "__main__":

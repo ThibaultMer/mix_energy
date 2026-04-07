@@ -27,7 +27,7 @@ class MlLog(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def load_model(self) -> BaseEstimator:
+    def load_model(self, name: str) -> BaseEstimator:
         pass
 
 
@@ -46,7 +46,7 @@ class MlFlowLogger(MlLog):
     def log_metrics(self, metrics):
         mlflow.log_metrics(metrics)
 
-    def load_model(self) -> BaseEstimator:
+    def load_model(self, name: str) -> BaseEstimator:
         return mlflow.sklearn.load_model(MLFLOW_TRACKING_URI)
 
     def __enter__(self):
