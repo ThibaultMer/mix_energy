@@ -8,7 +8,7 @@ from mix_energy import get_logger
 
 
 PROJECT_ID = os.getenv("PROJECT_ID")
-DATASET_ID = os.getenv("DATASET_ID")
+DATASET_ID = os.getenv("DATASET_ID_PROD")
 
 CSV_DELIMITER_SEMICOLON = ";"
 CSV_DELIMITER_COMMA = ","
