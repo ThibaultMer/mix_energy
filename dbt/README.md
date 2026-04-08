@@ -7,27 +7,27 @@ The `profiles.yml` file is located in /home/yourfolder/.dbt/profiles.yml. It con
 
 You should copy the following configuration into your `profiles.yml` file, making sure to replace the placeholders with your actual project details and credentials:
 ```yaml
-mix_energy_dbt:
+mix_energy_profile:
   target: dev
   outputs:
     dev:
       type: bigquery
       method: service-account
-      project: mix-energie-gcp   # BigQuery project ID
-      schema: dev_mix_energie   # BigQuery dataset/schema to use for development
+      project: "{{ env_var('PROJECT_ID') }}"   # BigQuery project ID
+      schema: "{{ env_var('DATASET_ID_DEV') }}"   # BigQuery dataset/schema to use for development
       keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"   # Path to the service account key file
       threads: 1
       timeout_seconds: 300
-      location: europe-west1
+      location: "{{ env_var('LOCATION') }}"
     prod:
       type: bigquery
       method: service-account
-      project: mix-energie-gcp   # BigQuery project ID
-      schema: prod_mix_energie   # BigQuery dataset/schema to use for production
+      project: "{{ env_var('PROJECT_ID') }}"   # BigQuery project ID
+      schema: "{{ env_var('DATASET_ID_PROD') }}"   # BigQuery dataset/schema to use for production
       keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"   # Path to the service account key file
       threads: 1
       timeout_seconds: 300
-      location: europe-west1
+      location: "{{ env_var('LOCATION') }}"
 ```
 ## Usage
 To run your DBT project, you can use the following commands in your terminal:
