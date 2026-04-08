@@ -16,6 +16,8 @@ from .bigquery_service import (
 from .config import load_settings
 from .schemas import DatasetOverview, FilterClause, QueryResponse, TableColumns
 
+from predict.train import predict_conso
+
 
 def _parse_columns(columns: str | None) -> list[str] | None:
     if not columns:
@@ -137,6 +139,28 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except BigQueryServiceError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/predict/national")
+    def predict_nat(service: BigQueryDatasetService = Depends(get_service)):
+        predicted_val = predict_conso(service.client, True)
+        if predicted_val is None:
+            raise HTTPException(
+                status_code=204, detail=str("No sufficient data for the prediction")
+            )
+
+        return predicted_val
+
+    @app.post("/predict/region")
+    def predict_region(
+        code_insee_region: int, service: BigQueryDatasetService = Depends(get_service)
+    ):
+        predicted_val = predict_conso(service.client, False, code_insee_region)
+        if predicted_val is None:
+            raise HTTPException(
+                status_code=204, detail=str("No sufficient data for the prediction")
+            )
+
+        return predicted_val
 
     return app
 
