@@ -115,6 +115,9 @@ def load_data(
 
         start_dt = start_dt - timedelta(days=1)
 
+        if current_dt.hour == 0:
+            start_dt = start_dt - timedelta(days=1)
+
         query = (
             f"select {query_data[ZoneDictEnum.FIELD_LIST]},year FROM {table_name} "
             f"WHERE consommation is not NULL AND year >={start_dt.year} AND month >={start_dt.month} "
