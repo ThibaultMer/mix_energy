@@ -96,8 +96,8 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    # train(bqclient, True)
-    # train(bqclient, False)
+    train(bqclient, True)
+    train(bqclient, False)
 
     pred_nat = predict_conso(bqclient)
     pred_reg_idf = predict_conso(bqclient, False, 11)
