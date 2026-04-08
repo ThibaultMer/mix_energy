@@ -10,9 +10,13 @@ __pycache__/
 data/
 !data/*.gitkeep
 
-# Models
-models/
-!models/.gitkeep
+#dbt
+dbt/target
+logs
+
+# gpickle files
+.gpickle
+
 
 # Env
 .env

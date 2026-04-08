@@ -1,0 +1,21 @@
+mix_energy_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: mix-energie-gcp   # BigQuery project ID
+      schema: dev_mix_energie   # BigQuery dataset/schema to use for development
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"   # Path to the service account key file
+      threads: 1
+      timeout_seconds: 300
+      location: europe-west1
+    prod:
+      type: bigquery
+      method: service-account
+      project: mix-energie-gcp   # BigQuery project ID
+      schema: prod_mix_energie   # BigQuery dataset/schema to use for production
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"   # Path to the service account key file
+      threads: 1
+      timeout_seconds: 300
+      location: europe-west1
