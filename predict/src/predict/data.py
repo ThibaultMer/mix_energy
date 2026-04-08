@@ -105,31 +105,92 @@ def load_data(
     return df
 
 
-# def build_input_national(df: pd.DataFrame):
-#     index = df["date_heure"].idxmax()
+def __compute_current_datetime():
+    current_dt = datetime.now()
 
-#     df.iloc(index)
+    # The prediction is done for the next 15 minutes
 
-#     current_dt = datetime.now()
+    if current_dt.minute > 45:
+        # If it is 15:47, the prediction will be done for 16:00
+        # If it is 23:47, the prediction will be done the day following at 00:00
+        current_dt = current_dt + timedelta(hours=1)
+    else:
+        # If it is 14:13, we will perform a prediction for 14:15
+        current_dt.minute = int(current_dt.minute / 15) * 15 + 15
 
-#     # The prediction is done for the next 15 minutes
-
-#     if current_dt.minute > 45:
-#         # If it is 15:47, the prediction will be done for 16:00
-#         # If it is 23:47, the prediction will be done the day following at 00:00
-#         current_dt = current_dt + timedelta(hours=1)
-#         minute = current_dt.minute
-#     else:
-#         # If it is 14:13, we will perform a prediction for 14:15
-#         minute = int(current_dt.minute / 15) * 15 + 15
-
-#     values = [current_dt.day, current_dt.month, current_dt.hour, minute, 0, 0, 0]
-
-#     input_values = dict(zip(QUERIES["national"][1], values))
+    return current_dt
 
 
-# def build_input_region(df: pd.DataFrame, code_insee: int):
-#     index = df["date_heure"].idxmax()
+def build_input_national(df: pd.DataFrame):
+    index = df["date_heure"].idxmax()
+
+    last_row = df.iloc(index)
+
+    current_dt = __compute_current_datetime()
+
+    last_conso = last_row["consommation"]
+
+    # For the prevision at day minus 1, we use the consumption of the day before
+    day_before = current_dt - timedelta(days=1)
+    prevision_j1 = df[df.date_heure == day_before]["consommation"]
+
+    values = [
+        current_dt.day,
+        current_dt.month,
+        current_dt.hour,
+        current_dt.minute,
+        0,
+        prevision_j1,
+        last_conso,
+    ]
+
+    df_to_eval = pd.DataFrame().from_dict(dict(zip(QUERIES["national"][1], values)))
+
+    return df_to_eval
+
+
+def build_input_region(df: pd.DataFrame, code_insee: int):
+    # Compute prev_conso_mean
+    # mean_t = ((mean_t1*nb_entry_t1)+current_conso)/nb_entry_t
+    index = df["date_heure"].idxmax()
+    last_entry = df.iloc(index)
+
+    prev_conso_mean_t1 = last_entry["prev_conso_mean"]
+    nb_entry_t = last_entry["total_count"]
+    nb_entry_t1 = nb_entry_t - 1
+    prev_conso_mean = (
+        (prev_conso_mean_t1 * nb_entry_t1) + last_entry["consommation"]
+    ) / nb_entry_t
+
+    # Compute prev_conso_mean_h
+    current_dt = __compute_current_datetime()
+    prev_hour_dt = current_dt - timedelta(hours=1)
+
+    last_hour_val = df[df.date_heure >= prev_hour_dt]
+    prev_conso_mean_h = (
+        last_hour_val["consommation"].sum() / last_hour_val["consommation"].count()
+    )
+
+    # Compute prev_conso_mean_m
+    # As the dataframe was built selecting the last 30 days, it is easy to compute this value
+    prev_conso_mean_m = df["consommation"].sum() / df["consommation"].count()
+
+    # "code_insee_region,day,month,hour,minute,,consommation,prev_conso_mean,prev_conso_mean_h,prev_conso_mean_m "
+    values = [
+        code_insee,
+        current_dt.day,
+        current_dt.month,
+        current_dt.hour,
+        current_dt.minute,
+        0,
+        prev_conso_mean,
+        prev_conso_mean_h,
+        prev_conso_mean_m,
+    ]
+
+    df_to_eval = pd.DataFrame().from_dict(dict(zip(QUERIES["region"][1], values)))
+
+    return df_to_eval
 
 
 def create_X_y(

@@ -100,9 +100,11 @@ class Energypredict:
 
         return metrics
 
-    # def predict(self, input_vals):
-    #     pred = self.__model.predict(input_vals)
-    #     if pred is not None:
-    #         logger.info(f"From {input_vals} predicted an energy consumption of {pred}")
-    #     else:
-    #         logger.error(f"Fail to realize a prediction from {input_vals}")
+    def predict(self, input_vals: pd.DataFrame) -> float | None:
+        pred = self.__model.predict(input_vals)
+        if pred is not None:
+            logger.info(f"From {input_vals} predicted an energy consumption of {pred}")
+        else:
+            logger.error(f"Fail to realize a prediction from {input_vals}")
+
+        return pred
