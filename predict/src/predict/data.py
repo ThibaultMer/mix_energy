@@ -11,7 +11,7 @@ from predict import get_logger
 from datetime import datetime, timedelta
 
 
-BIGQUERY_DATASET = os.getenv("BIGQUERY_DATASET", "prod_mix_energie")
+BIGQUERY_DATASET = os.getenv("DATASET_ID_PROD", "prod_mix_energie")
 
 
 class ZoneEnum(StrEnum):
