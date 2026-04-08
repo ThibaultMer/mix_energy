@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any, Sequence
 
@@ -85,10 +85,20 @@ def _coerce_scalar_value(field_type: str, value: Any) -> Any:
         if isinstance(value, date) and not isinstance(value, datetime):
             return value
         return date.fromisoformat(str(value))
-    if normalized_type in {"DATETIME", "TIMESTAMP"}:
+    if normalized_type == "DATETIME":
         if isinstance(value, datetime):
-            return value
-        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+            return value.replace(tzinfo=None)
+        parsed_value = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return parsed_value.replace(tzinfo=None)
+    if normalized_type == "TIMESTAMP":
+        if isinstance(value, datetime):
+            return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+        parsed_value = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return (
+            parsed_value
+            if parsed_value.tzinfo is not None
+            else parsed_value.replace(tzinfo=UTC)
+        )
     if normalized_type == "TIME":
         return str(value)
     return value
@@ -323,12 +333,17 @@ class BigQueryDatasetService:
         query_parameters: list[Any] = []
         where_clauses: list[str] = []
 
-        for index, filter_clause in enumerate(filters or []):
-            clause_sql, clause_parameters = self._resolve_filter(
-                table, filter_clause, index
-            )
-            where_clauses.append(clause_sql)
-            query_parameters.extend(clause_parameters)
+        try:
+            for index, filter_clause in enumerate(filters or []):
+                clause_sql, clause_parameters = self._resolve_filter(
+                    table, filter_clause, index
+                )
+                where_clauses.append(clause_sql)
+                query_parameters.extend(clause_parameters)
+        except (ValueError, TypeError) as exc:
+            raise BigQueryServiceError(
+                f"Invalid filter value for table '{table.name}': {exc}"
+            ) from exc
 
         safe_limit = (
             self.settings.default_limit
@@ -347,9 +362,16 @@ class BigQueryDatasetService:
             query_sql += " WHERE " + " AND ".join(where_clauses)
         query_sql += " LIMIT @limit_value"
 
-        query_job_config = bigquery.QueryJobConfig(query_parameters=query_parameters)
-        query_job = self.client.query(query_sql, job_config=query_job_config)
-        rows = [dict(row) for row in query_job.result()]
+        try:
+            query_job_config = bigquery.QueryJobConfig(
+                query_parameters=query_parameters
+            )
+            query_job = self.client.query(query_sql, job_config=query_job_config)
+            rows = [dict(row) for row in query_job.result()]
+        except Exception as exc:
+            raise BigQueryServiceError(
+                f"BigQuery query failed for table '{table.name}': {exc}"
+            ) from exc
 
         return {
             "project_id": self.settings.project_id,
