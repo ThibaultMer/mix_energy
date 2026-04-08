@@ -13,7 +13,7 @@ from mix_energy.bigquery_schema_generator import generate_all_schemas
 # ─────────────────────────────────────────
 
 PROJECT_ID = os.getenv("PROJECT_ID")
-DATASET_ID = os.getenv("DATASET_ID")
+DATASET_ID = os.getenv("DATASET_ID_PROD")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 PREFIX = os.getenv("PREFIX")
 SCHEMA_SAMPLE_ROWS = int(os.getenv("SCHEMA_SAMPLE_ROWS", "500"))
