@@ -3,14 +3,14 @@ version: 1
 sources:
   - name: nat_source
     database: mix-energie-gcp
-    schema: "{{ env_var('BIGQUERY_DATASET') }}"
+    schema: "{{ target.schema }}"
     tables:
       - name: eco2mix_national_cons_def
       - name: eco2mix_national_tr
 
   - name: reg_source
     database: mix-energie-gcp
-    schema: "{{ env_var('BIGQUERY_DATASET') }}"
+    schema: "{{ target.schema }}"
     tables:
       - name: eco2mix_regional_cons_def
       - name: eco2mix_regional_tr
