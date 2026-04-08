@@ -79,9 +79,9 @@ def predict_conso(
             df_to_evaluate = build_input_region(df, code_insee=code_insee_region)
 
         pred_conso = None
-
         if df_to_evaluate is not None:
-            pred_conso = predicteng.predict(df_to_evaluate)
+            X_test_preproc = predicteng.preprocess_data(df_to_evaluate, train=False)
+            pred_conso = predicteng.predict(X_test_preproc)
 
         return pred_conso
 
@@ -96,8 +96,8 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    train(bqclient, True)
-    train(bqclient, False)
+    # train(bqclient, True)
+    # train(bqclient, False)
 
     pred_nat = predict_conso(bqclient)
     pred_reg_idf = predict_conso(bqclient, False, 11)

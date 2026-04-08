@@ -6,9 +6,12 @@ from sklearn.base import BaseEstimator
 from predict import get_logger
 from datetime import date
 
-MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "local")
+MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
 
+# -------------------------------------------------------------------------
+# Base class for Machine Learning Model logger
+# -------------------------------------------------------------------------
 class MlLog(abc.ABC):
     def __init__(self, savename: str):
         self.savename = savename
@@ -34,6 +37,9 @@ class MlLog(abc.ABC):
         pass
 
 
+# -------------------------------------------------------------------------
+# Machine Learning Model File logger
+# -------------------------------------------------------------------------
 class MlFileLogger(MlLog):
     def __init__(self, savename: str):
         super.__init__(savename)
@@ -64,13 +70,16 @@ class MlFileLogger(MlLog):
         self.__file = None
 
 
+# -------------------------------------------------------------------------
+# Machine Learning Model MLFLOW logger
+# -------------------------------------------------------------------------
 class MlFlowLogger(MlLog):
     def __init__(self, savename: str):
         super().__init__(savename)
         mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
         current_date = date.today()
-        experiment = f"Energy Model Tracking {current_date.day}_{current_date.month}_{current_date.year}"
+        experiment = f"Energy Model Tracking {current_date.month}_{current_date.year}"
         get_logger().info(f"Experimentation : {experiment}")
         mlflow.set_experiment(experiment)
 

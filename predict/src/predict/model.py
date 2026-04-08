@@ -80,7 +80,7 @@ class Energypredict:
     def evaluate_model(self, X_test, y_test) -> dict:
         if self.__model is None:
             try:
-                self.__mllogger.load_model("energy_pred")
+                self.__model = self.__mllogger.load_model("energy_pred")
             except Exception:
                 get_logger().error("Fail to load the model")
                 return {}
@@ -101,10 +101,16 @@ class Energypredict:
         return metrics
 
     def predict(self, input_vals: pd.DataFrame) -> float | None:
+        try:
+            self.__model = self.__mllogger.load_model("energy_pred")
+        except Exception:
+            get_logger().error("Fail to load the model")
+            return None
+
         pred = self.__model.predict(input_vals)
         if pred is not None:
             logger.info(f"From {input_vals} predicted an energy consumption of {pred}")
         else:
             logger.error(f"Fail to realize a prediction from {input_vals}")
 
-        return pred
+        return pred[0]
