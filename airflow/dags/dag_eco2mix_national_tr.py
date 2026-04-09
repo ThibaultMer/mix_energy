@@ -11,6 +11,8 @@ from airflow.timetables.trigger import MultipleCronTriggerTimetable
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
 from mix_energy.eco2mix_ingest import retrieve_csv as _retrieve_csv
 
+from airflow.operators.bash import BashOperator
+
 DATASET_ID = "eco2mix-national-tr"
 FILE_PREFIX = "eco2mix-national-tr"
 GCP_CONN_ID = "google_cloud_default"
@@ -76,10 +78,22 @@ def dag_eco2mix_national_tr():
         transfer_csv_from_bucket_to_bigquery(file_prefix=FILE_PREFIX)
     )
 
+    DBT_DIR = "../../dbt"
+
+    dbt_eco2mix_national_tr = BashOperator(
+        task_id="dbt_eco2mix_national_tr",
+        bash_command=f"""
+        cd {DBT_DIR} &&
+        dbt run --select nat_tr_agre_j --target prod &&
+        dbt run --select nat_tr_predi --target prod
+        """,
+    )
+
     (
         check_bucket_connection_task
         >> ingest_csv_to_bucket_task
         >> transfer_csv_from_bucket_to_bigquery_task
+        >> dbt_eco2mix_national_tr
     )
 
 
