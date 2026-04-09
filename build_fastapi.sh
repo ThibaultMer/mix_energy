@@ -2,7 +2,6 @@
 
 echo "Build the predict module"
 cd predict
-pwd
 poetry build
 cd ..
 cp predict/dist/predict-*-py3-none-any.whl fastapi/
