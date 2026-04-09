@@ -7,6 +7,7 @@ Page 4: Vision régionale en temps réel des données de production d'électrici
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import importlib
 
 try:
@@ -17,14 +18,16 @@ except ImportError:  # pragma: no cover - optional dependency
 
 from dashboard_share import (
     BASE_LAYOUT,
+    COLORS,
+    SOURCE_COLUMNS,
     apply_global_style,
     apply_widget_text_style,
     clear_realtime_cache,
     configure_page,
-    get_energy_types,
     get_region_options,
     get_realtime_numeric_columns,
     get_regional_realtime_context,
+    render_page2_sidebar_filters,
     render_sidebar,
     styled_axis,
 )
@@ -35,7 +38,6 @@ configure_page()
 apply_global_style()
 
 REGIONS = get_region_options()
-ENERGY_TYPES = get_energy_types()
 
 render_sidebar()
 
@@ -89,81 +91,213 @@ df_chart = context.get("df_reg_tr_agre_j")
 if df_chart is not None:
     df4 = df_chart.copy()
 
-    if "mois" in df4.columns:
-        df4["mois"] = pd.to_datetime(df4["mois"], utc=True).dt.tz_convert(None)
-        df4["year"] = df4["mois"].dt.year
-        df4["month"] = df4["mois"].dt.month
-        df4["day"] = df4["mois"].dt.day
+    if "date" in df4.columns:
+        df4["plot_date"] = pd.to_datetime(df4["date"], errors="coerce")
+    elif all(column in df4.columns for column in ["annee", "mois", "jour"]):
+        df4["plot_date"] = pd.to_datetime(
+            {
+                "year": pd.to_numeric(df4["annee"], errors="coerce"),
+                "month": pd.to_numeric(df4["mois"], errors="coerce"),
+                "day": pd.to_numeric(df4["jour"], errors="coerce"),
+            },
+            errors="coerce",
+        )
+    elif "mois" in df4.columns:
+        df4["plot_date"] = pd.to_datetime(df4["mois"], errors="coerce")
+    else:
+        df4["plot_date"] = pd.NaT
+
+    df4 = df4.dropna(subset=["plot_date"]).sort_values("plot_date")
 
     region_col = "libelle_region" if "libelle_region" in df4.columns else "region"
     if region_col not in df4.columns:
         st.error("Aucune colonne de région trouvée (libelle_region ou region).")
         st.stop()
 
-    y_variables = get_realtime_numeric_columns(
-        df4, extra_excluded={"code_insee_region", region_col}
-    )
-    x_variables = ["year", "month", "day"]
-
-    apply_widget_text_style(color="#c8e6ff")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        selected_x = st.selectbox(
-            "Dimension du Temps (X-axis):",
-            x_variables,
-            index=x_variables.index("month"),
-            key="regional_rt_x_select",
-        )
-    with col2:
-        selected_y = st.multiselect(
-            "Sources d'Energies (Y-axis):",
-            y_variables,
-            default=y_variables[:3] if len(y_variables) >= 3 else y_variables,
-            key="regional_rt_y_select",
-        )
     df4 = df4[df4[region_col].astype(str) == selected_region]
 
+    source_columns = [
+        column for column in SOURCE_COLUMNS.values() if column in df4.columns
+    ]
+    y_variables = [
+        column
+        for column in source_columns
+        if column in get_realtime_numeric_columns(df4, extra_excluded={"code_insee_region", region_col})
+    ]
+    default_y = [
+        column
+        for column in ["nucleaire", "eolien", "hydraulique"]
+        if column in y_variables
+    ]
+    if not default_y:
+        default_y = y_variables[:3] if len(y_variables) >= 3 else y_variables
+
+    apply_widget_text_style(color="#000000", font_size="0.95rem")
+    selected_y = render_page2_sidebar_filters(y_variables, default_y)
+
     if selected_y:
-        fig4 = go.Figure()
+        has_co2 = "taux_co2" in df4.columns and df4["taux_co2"].notna().any()
+
+        if has_co2:
+            fig4 = make_subplots(
+                rows=2,
+                cols=1,
+                shared_xaxes=True,
+                vertical_spacing=0.1,
+                row_heights=[0.62, 0.38],
+                subplot_titles=(
+                    "Production regionale d'electricite",
+                    "Taux de CO2 quotidien - derniere valeur du jour",
+                ),
+            )
+        else:
+            fig4 = go.Figure()
+
         for y_col in selected_y:
-            df_plot = df4[[selected_x, y_col]].dropna().sort_values(selected_x)
-            if not df_plot.empty:
-                fig4.add_trace(
-                    go.Scatter(
-                        x=df_plot[selected_x],
-                        y=df_plot[y_col],
-                        mode="lines+markers",
-                        name=y_col,
-                        hovertemplate=(
-                            f"<b>{y_col}</b><br>"
-                            f"{selected_x}: %{{x}}<br>"
-                            f"Valeur: %{{y:.2f}}<extra></extra>"
-                        ),
-                    )
-                )
+            df_plot = df4[["plot_date", y_col]].dropna().sort_values("plot_date")
+            if df_plot.empty:
+                continue
+
+            trace = go.Scatter(
+                x=df_plot["plot_date"],
+                y=df_plot[y_col],
+                mode="lines",
+                name=y_col,
+                line={
+                    "color": COLORS.get(y_col.capitalize(), "#3d3d3d"),
+                    "width": 2.5,
+                },
+                hovertemplate=(
+                    f"<b>{y_col}</b><br>"
+                    "Date: %{x|%Y-%m-%d}<br>"
+                    "Mois/Annee: %{x|%B %Y}<br>"
+                    "Production: %{y:.2f}<extra></extra>"
+                ),
+            )
+
+            if has_co2:
+                fig4.add_trace(trace, row=1, col=1)
+            else:
+                fig4.add_trace(trace)
+
+        if has_co2:
+            df_co2 = df4[["plot_date", "taux_co2"]].dropna().copy()
+            df_co2["day"] = df_co2["plot_date"].dt.floor("D")
+            co2_daily = (
+                df_co2.sort_values("plot_date")
+                .groupby("day", as_index=False)
+                .last()
+                .sort_values("day")
+            )
+
+            fig4.add_trace(
+                go.Bar(
+                    x=co2_daily["day"],
+                    y=co2_daily["taux_co2"],
+                    marker_color="#00dcff",
+                    hovertemplate=(
+                        "Date: %{x|%Y-%m-%d}<br>Taux CO2: %{y:.2f}<extra></extra>"
+                    ),
+                    name="taux_co2",
+                    showlegend=False,
+                ),
+                row=2,
+                col=1,
+            )
 
         fig4.update_layout(
-            **BASE_LAYOUT,
+            paper_bgcolor=BASE_LAYOUT.get("paper_bgcolor"),
+            plot_bgcolor=BASE_LAYOUT.get("plot_bgcolor"),
+            font=BASE_LAYOUT.get("font"),
             title={
-                "text": "Production régionale d'électricité - Données Temps Réel",
+                "text": "Production regionale d'electricite et taux de CO2 - 30 derniers jours glissants",
                 "x": 0.5,
                 "xanchor": "center",
-                "font": {"size": 16, "color": "#00dcff"},
+                "y": 0.98,
+                "yanchor": "top",
+                "font": {"size": 30, "color": "#ffffff"},
             },
-            xaxis=styled_axis(f"Time Dimension ({selected_x.capitalize()})"),
-            yaxis=styled_axis("Production Value"),
-            height=500,
+            margin={"l": 80, "r": 80, "t": 120, "b": 80},
+            legend={
+                "font": {"size": 16, "color": "#ffffff"},
+                "bgcolor": "rgba(0,15,40,0.75)",
+                "bordercolor": "rgba(0,180,255,0.3)",
+                "borderwidth": 1,
+            },
+            height=820 if has_co2 else 500,
             hovermode="x unified",
         )
+
+        if has_co2:
+            fig4.update_xaxes(
+                **{
+                    **styled_axis("Jour"),
+                    "tickformat": "%d/%m",
+                    "tickfont": {"size": 14, "color": "#ffffff"},
+                },
+                row=1,
+                col=1,
+            )
+            fig4.update_xaxes(
+                **{
+                    **styled_axis("Jour"),
+                    "title": {"text": "Jour", "font": {"size": 16, "color": "#ffffff"}},
+                    "tickformat": "%d/%m",
+                    "tickfont": {"size": 14, "color": "#ffffff"},
+                },
+                row=2,
+                col=1,
+            )
+            fig4.update_yaxes(
+                **{
+                    **styled_axis("Production"),
+                    "title": {
+                        "text": "Production",
+                        "font": {"size": 16, "color": "#ffffff"},
+                    },
+                    "tickfont": {"size": 14, "color": "#ffffff"},
+                },
+                row=1,
+                col=1,
+            )
+            fig4.update_yaxes(
+                **{
+                    **styled_axis("Taux CO2 (g/kWh)"),
+                    "title": {
+                        "text": "Taux CO2 (g/kWh)",
+                        "font": {"size": 16, "color": "#ffffff"},
+                    },
+                    "tickfont": {"size": 14, "color": "#ffffff"},
+                },
+                row=2,
+                col=1,
+            )
+            fig4.update_annotations(font={"size": 18, "color": "#ffffff"})
+        else:
+            fig4.update_layout(
+                xaxis={
+                    **styled_axis("Jour"),
+                    "title": {"text": "Jour", "font": {"size": 16, "color": "#ffffff"}},
+                    "tickformat": "%d/%m",
+                    "tickfont": {"size": 16, "color": "#ffffff"},
+                },
+                yaxis={
+                    **styled_axis("Production"),
+                    "title": {
+                        "text": "Production",
+                        "font": {"size": 16, "color": "#ffffff"},
+                    },
+                    "tickfont": {"size": 16, "color": "#ffffff"},
+                },
+            )
 
         st.markdown(
             """
 <div class="chart-card">
-  <div class="chart-title">📈 Série Temporelle Régionale (Temps Réel)</div>
+  <div class="chart-title">⚡ Production regionale et 🟦 CO2 quotidien (30 jours glissants)</div>
   <div class="chart-desc">
-    Explorez l'évolution des variables de production par région en sélectionnant une dimension temporelle,
-    une ou plusieurs variables Y, puis une région spécifique.
+    Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
+    afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
   </div>
 </div>
 """,
@@ -181,9 +315,6 @@ else:
         "Les données ne sont pas disponibles. Veuillez vérifier le chargement des données."
     )
 
-
-st.markdown("---")
-st.subheader("Comparaison régionale et nationale")
 
 st.markdown(
     """
