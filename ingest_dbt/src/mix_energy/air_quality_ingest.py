@@ -33,7 +33,7 @@ log = get_logger()
 
 
 def save_air_quality_to_bucket(features: list[dict], bucket) -> bool:
-    """Convertit les features ATMO en CSV et les envoie dans le bucket GCP."""
+    """Convertit les features ATMO en CSV et les envoie dans le bucket GCP (mode local ou Airflow)."""
     if not features:
         log.info("Aucune donnée à sauvegarder.")
         return False
@@ -46,10 +46,18 @@ def save_air_quality_to_bucket(features: list[dict], bucket) -> bool:
     for feat in features:
         writer.writerow(feat["properties"])
 
+    # Callback Airflow si défini
+    upload_callback = globals().get("_air_quality_upload_callback", None)
+    if upload_callback is not None:
+        upload_callback(csv_buffer.getvalue(), "air_quality_daily")
+        log.info("Données déposées dans le bucket GCP (Airflow mode).")
+        return True
+
+    # Mode local par défaut
     upload_data_in_bucket(
         bucket, csv_buffer.getvalue().encode("utf-8-sig"), "air_quality_daily"
     )
-    log.info("Données déposées dans le bucket GCP.")
+    log.info("Données déposées dans le bucket GCP (local mode).")
     return True
 
 
@@ -210,6 +218,12 @@ def run_ingestion(date_jour: str | None = None) -> None:
 
     if not data or "features" not in data:
         log.info("Aucune donnée reçue de l'API.")
+        return
+
+    # Callback Airflow ?
+    upload_callback = globals().get("_air_quality_upload_callback", None)
+    if upload_callback is not None:
+        save_air_quality_to_bucket(data["features"], None)
         return
 
     bucket = _get_bucket_or_log_error()

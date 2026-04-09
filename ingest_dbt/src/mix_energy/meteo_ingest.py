@@ -56,6 +56,19 @@ CITIES = {
 logger = get_logger()
 
 
+def _normalize_day_count(value, env_name: str) -> int:
+    if isinstance(value, int):
+        return value
+    if value is None:
+        raise RuntimeError(f"Variable d'environnement {env_name} requise.")
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"Variable d'environnement {env_name} doit etre un entier."
+        ) from exc
+
+
 def get_meteo_forecast(
     latitude: float, longitude: float, past_days: int, forecast_days: int
 ) -> dict:
@@ -109,37 +122,44 @@ def json_to_dataframe(meteo_data: dict) -> pd.DataFrame:
 
 def save_meteo_to_csv(df: pd.DataFrame, city_name: str):
     """
-    Enregistre les données météorologiques dans un fichier CSV.
+    Convertit les données météo en CSV et les envoie dans le bucket (mode local ou Airflow).
 
     Args:
-            df: DataFrame contenant les données météorologiques
-            city_name: Nom de la ville pour laquelle les données sont enregistrées
+        df: DataFrame contenant les données météorologiques
+        city_name: Nom de la ville pour laquelle les données sont enregistrées
+        upload_callback: Fonction d'upload personnalisée (optionnelle)
     """
+    csv_content = df.to_csv(index=False)
 
-    import os
+    # If an Airflow GCS upload callback is provided, use it
+    upload_callback = globals().get("_meteo_upload_callback", None)
+    if upload_callback is not None:
+        upload_callback(csv_content, city_name)
+        logger.info(
+            f"Fichier meteo_{city_name}.csv uploade dans le bucket GCP (Airflow mode)."
+        )
+        return
 
-    dir_path = "data/meteo"
-    os.makedirs(dir_path, exist_ok=True)
-    file_path = f"{dir_path}/meteo_{city_name}.csv"
-    df.to_csv(file_path, index=False)
-    logger.info(f"Données météorologiques enregistrées dans {file_path}")
-
-    # Upload to GCP bucket
+    # Default: local mode
     bucket = connect_to_bucket()
     if bucket is not None:
-        with open(file_path, "r") as f:
-            content = f.read()
-            upload_data_in_bucket(bucket, content, f"meteo_{city_name}")
-        logger.info(f"Fichier {file_path} uploadé dans le bucket GCP.")
-    else:
-        logger.error("Impossible de se connecter au bucket GCP pour l'upload.")
+        upload_data_in_bucket(bucket, csv_content, f"meteo_{city_name}")
+        logger.info(
+            f"Fichier meteo_{city_name}.csv uploade dans le bucket GCP (local mode)."
+        )
+        return
+
+    raise RuntimeError("Impossible de se connecter au bucket GCP pour l'upload.")
 
 
 def run_ingestion() -> None:
-    """Récupère les données météo de toutes les villes et les enregistre en CSV."""
+    """Récupère les données météo de toutes les villes et les envoie dans le bucket."""
+    parsed_past_days = _normalize_day_count(past_days, "PAST_DAYS")
+    parsed_forecast_days = _normalize_day_count(forecast_days, "FORCAST_DAYS")
+
     for city_name, (latitude, longitude) in CITIES.items():
         meteo_payload = get_meteo_forecast(
-            latitude, longitude, past_days, forecast_days
+            latitude, longitude, parsed_past_days, parsed_forecast_days
         )
         df_meteo = json_to_dataframe(meteo_payload)
         save_meteo_to_csv(df_meteo, city_name)

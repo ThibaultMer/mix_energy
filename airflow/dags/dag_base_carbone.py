@@ -10,8 +10,8 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from mix_energy.base_carbone_ingest import get_base_carbone
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
 
-DATASET_ID = "base-carbone"
-FILE_PREFIX = "base-carbone"
+DATASET_ID = "base_carbone"
+FILE_PREFIX = "base_carbone"
 GCP_CONN_ID = "google_cloud_default"
 BUCKET_NAME = os.getenv("BUCKET_NAME", "mix-energie-bucket")
 
@@ -22,7 +22,7 @@ BUCKET_NAME = os.getenv("BUCKET_NAME", "mix-energie-bucket")
     start_date=datetime(2026, 1, 1),
     schedule="30 9 1 * 1-5",
     catchup=False,
-    tags=["base-carbone", "ingestion"],
+    tags=["base_carbone", "ingestion"],
 )
 def dag_base_carbone():
     @task(task_id="check_bucket_connection")
@@ -43,7 +43,7 @@ def dag_base_carbone():
 
         csv_content = df.to_csv(index=False, sep=";").encode("utf-8")
         if len(csv_content) == 0:
-            raise RuntimeError("CSV vide recupere pour base-carbone.")
+            raise RuntimeError("CSV vide recupere pour base_carbone.")
 
         if BUCKET_NAME != bucket_name:
             raise RuntimeError(

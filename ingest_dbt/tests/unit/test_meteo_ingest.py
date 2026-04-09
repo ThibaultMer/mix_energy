@@ -1,7 +1,6 @@
-from pathlib import Path
-
 import pandas as pd
 import requests
+import pytest
 
 from mix_energy.meteo_ingest import (
     get_meteo_forecast,
@@ -70,10 +69,7 @@ def test_json_to_dataframe_empty_payload_returns_empty_dataframe():
     assert df.empty
 
 
-def test_save_meteo_to_csv_writes_expected_file(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    Path("data/meteo").mkdir(parents=True, exist_ok=True)
-
+def test_save_meteo_to_csv_uploads_expected_dataset(monkeypatch):
     df = pd.DataFrame(
         {
             "time": pd.to_datetime(["2026-03-31T00:00"]),
@@ -81,14 +77,39 @@ def test_save_meteo_to_csv_writes_expected_file(tmp_path, monkeypatch):
         }
     )
 
+    fake_bucket = object()
+    captured = {}
+
+    def fake_connect_to_bucket():
+        return fake_bucket
+
+    def fake_upload_data_in_bucket(bucket, data, dataset):
+        captured["bucket"] = bucket
+        captured["data"] = data
+        captured["dataset"] = dataset
+
+    monkeypatch.setattr(
+        "mix_energy.meteo_ingest.connect_to_bucket", fake_connect_to_bucket
+    )
+    monkeypatch.setattr(
+        "mix_energy.meteo_ingest.upload_data_in_bucket",
+        fake_upload_data_in_bucket,
+    )
+
     save_meteo_to_csv(df, "paris")
 
-    output_file = Path("data/meteo/meteo_paris.csv")
-    assert output_file.exists()
+    assert captured["bucket"] is fake_bucket
+    assert captured["dataset"] == "meteo_paris"
+    assert "temperature_2m" in captured["data"]
+    assert "15.0" in captured["data"]
 
-    saved_df = pd.read_csv(output_file)
-    assert list(saved_df.columns) == ["time", "temperature_2m"]
-    assert len(saved_df) == 1
 
-    output_file.unlink()
-    assert not output_file.exists()
+def test_save_meteo_to_csv_raises_when_bucket_unavailable(monkeypatch):
+    df = pd.DataFrame(
+        {"time": pd.to_datetime(["2026-03-31T00:00"]), "temperature_2m": [15.0]}
+    )
+
+    monkeypatch.setattr("mix_energy.meteo_ingest.connect_to_bucket", lambda: None)
+
+    with pytest.raises(RuntimeError, match="Impossible de se connecter au bucket GCP"):
+        save_meteo_to_csv(df, "paris")
