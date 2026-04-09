@@ -22,12 +22,10 @@ from dashboard_share import (
     SOURCE_COLUMNS,
     apply_global_style,
     apply_widget_text_style,
-    clear_realtime_cache,
     configure_page,
     get_region_options,
     get_realtime_numeric_columns,
     get_regional_realtime_context,
-    render_page2_sidebar_filters,
     render_sidebar,
     styled_axis,
 )
@@ -43,6 +41,10 @@ render_sidebar()
 
 default_region = "Île-de-France" if "Île-de-France" in REGIONS else REGIONS[0]
 with st.sidebar:
+    st.markdown(
+        '<div class="sidebar-section">🔍 Filtres du graphique</div>',
+        unsafe_allow_html=True,
+    )
     selected_region = st.selectbox(
         "Région analysée:",
         options=REGIONS,
@@ -113,7 +115,13 @@ if df_chart is not None:
         default_y = y_variables[:3] if len(y_variables) >= 3 else y_variables
 
     apply_widget_text_style(color="#000000", font_size="0.95rem")
-    selected_y = render_page2_sidebar_filters(y_variables, default_y)
+    with st.sidebar:
+        selected_y = st.multiselect(
+            "Sources d'energies:",
+            y_variables,
+            default=default_y,
+            key="nrt_energy_y_select",
+        )
 
     if selected_y:
         has_co2 = "taux_co2" in df4.columns and df4["taux_co2"].notna().any()
