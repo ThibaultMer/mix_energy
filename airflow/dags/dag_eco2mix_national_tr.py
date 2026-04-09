@@ -7,16 +7,16 @@ from typing import Any
 from airflow.sdk import dag, task
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.timetables.trigger import MultipleCronTriggerTimetable
+from airflow.providers.standard.operators.bash import BashOperator
 
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
 from mix_energy.eco2mix_ingest import retrieve_csv as _retrieve_csv
-
-from airflow.operators.bash import BashOperator
 
 DATASET_ID = "eco2mix-national-tr"
 FILE_PREFIX = "eco2mix-national-tr"
 GCP_CONN_ID = "google_cloud_default"
 BUCKET_NAME = os.getenv("BUCKET_NAME", "mix-energie-bucket")
+DBT_DIR = "/opt/project/dbt"
 
 
 @dag(
@@ -77,8 +77,6 @@ def dag_eco2mix_national_tr():
     transfer_csv_from_bucket_to_bigquery_task: Any = (
         transfer_csv_from_bucket_to_bigquery(file_prefix=FILE_PREFIX)
     )
-
-    DBT_DIR = "../../dbt"
 
     dbt_eco2mix_national_tr = BashOperator(
         task_id="dbt_eco2mix_national_tr",
