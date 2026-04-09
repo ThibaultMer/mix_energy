@@ -13,9 +13,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
-from plotly.subplots import make_subplots
 
 from data_api_client import FastAPIClient
 
@@ -91,7 +89,7 @@ def build_bg_css() -> str:
         position: fixed;
         inset: 0;
         background: url("data:image/jpeg;base64,{bg_b64}") center center / cover no-repeat;
-        filter: blur(2px) brightness(1);
+        filter: blur(0.5px) brightness(1);
         z-index: 0;
         transform: scale(1.04);
     }}
@@ -382,6 +380,10 @@ div[data-baseweb="select"] {{
     background: rgba(0, 20, 50, 0.6) !important;
     border-color: rgba(0, 180, 255, 0.3) !important;
 }}
+[data-testid="stSidebar"] div[data-baseweb="select"] svg {{
+    fill: #c8e6ff !important;
+    color: #c8e6ff !important;
+}}
 
 /* Date input styling for sidebar */
 [data-testid="stSidebar"] input[type="date"],
@@ -660,200 +662,6 @@ li[role="option"] * {{
 """,
         unsafe_allow_html=True,
     )
-
-
-def ensure_realtime_plot_date(frame: pd.DataFrame) -> pd.DataFrame:
-    normalized = frame.copy()
-
-    if "date" in normalized.columns:
-        normalized["plot_date"] = pd.to_datetime(
-            normalized["date"], errors="coerce"
-        )
-    elif all(column in normalized.columns for column in ["annee", "mois", "jour"]):
-        normalized["plot_date"] = pd.to_datetime(
-            {
-                "year": pd.to_numeric(normalized["annee"], errors="coerce"),
-                "month": pd.to_numeric(normalized["mois"], errors="coerce"),
-                "day": pd.to_numeric(normalized["jour"], errors="coerce"),
-            },
-            errors="coerce",
-        )
-    elif "mois" in normalized.columns:
-        normalized["plot_date"] = pd.to_datetime(
-            normalized["mois"], errors="coerce"
-        )
-    else:
-        normalized["plot_date"] = pd.NaT
-
-    return normalized.dropna(subset=["plot_date"]).sort_values("plot_date")
-
-
-def build_realtime_timeseries_figure(
-    frame: pd.DataFrame,
-    *,
-    selected_y: list[str],
-    title_text: str,
-    production_subplot_title: str,
-) -> go.Figure:
-    has_co2 = "taux_co2" in frame.columns and frame["taux_co2"].notna().any()
-
-    if has_co2:
-        figure = make_subplots(
-            rows=2,
-            cols=1,
-            shared_xaxes=True,
-            vertical_spacing=0.1,
-            row_heights=[0.62, 0.38],
-            subplot_titles=(
-                production_subplot_title,
-                "Taux de CO2 quotidien - derniere valeur du jour",
-            ),
-        )
-    else:
-        figure = go.Figure()
-
-    for y_col in selected_y:
-        df_plot = frame[["plot_date", y_col]].dropna().sort_values("plot_date")
-        if df_plot.empty:
-            continue
-
-        trace = go.Scatter(
-            x=df_plot["plot_date"],
-            y=df_plot[y_col],
-            mode="lines",
-            name=y_col,
-            line={
-                "color": COLORS.get(y_col.capitalize(), "#3d3d3d"),
-                "width": 2.5,
-            },
-            hovertemplate=(
-                f"<b>{y_col}</b><br>"
-                "Date: %{x|%Y-%m-%d}<br>"
-                "Mois/Annee: %{x|%B %Y}<br>"
-                "Production: %{y:.2f}<extra></extra>"
-            ),
-        )
-
-        if has_co2:
-            figure.add_trace(trace, row=1, col=1)
-        else:
-            figure.add_trace(trace)
-
-    if has_co2:
-        df_co2 = frame[["plot_date", "taux_co2"]].dropna().copy()
-        df_co2["day"] = df_co2["plot_date"].dt.floor("D")
-        co2_daily = (
-            df_co2.sort_values("plot_date")
-            .groupby("day", as_index=False)
-            .last()
-            .sort_values("day")
-        )
-
-        figure.add_trace(
-            go.Bar(
-                x=co2_daily["day"],
-                y=co2_daily["taux_co2"],
-                marker_color="#00dcff",
-                hovertemplate=(
-                    "Date: %{x|%Y-%m-%d}<br>Taux CO2: %{y:.2f}<extra></extra>"
-                ),
-                name="taux_co2",
-                showlegend=False,
-            ),
-            row=2,
-            col=1,
-        )
-
-    figure.update_layout(
-        paper_bgcolor=BASE_LAYOUT.get("paper_bgcolor"),
-        plot_bgcolor=BASE_LAYOUT.get("plot_bgcolor"),
-        font=BASE_LAYOUT.get("font"),
-        title={
-            "text": title_text,
-            "x": 0.5,
-            "xanchor": "center",
-            "y": 0.98,
-            "yanchor": "top",
-            "font": {"size": 30, "color": "#ffffff"},
-        },
-        margin={"l": 80, "r": 80, "t": 120, "b": 80},
-        legend={
-            "font": {"size": 16, "color": "#ffffff"},
-            "bgcolor": "rgba(0,15,40,0.75)",
-            "bordercolor": "rgba(0,180,255,0.3)",
-            "borderwidth": 1,
-        },
-        height=820 if has_co2 else 500,
-        hovermode="x unified",
-    )
-
-    if has_co2:
-        figure.update_xaxes(
-            **{
-                **styled_axis("Jour"),
-                "tickformat": "%d/%m",
-                "tickfont": {"size": 14, "color": "#ffffff"},
-            },
-            row=1,
-            col=1,
-        )
-        figure.update_xaxes(
-            **{
-                **styled_axis("Jour"),
-                "title": {
-                    "text": "Jour",
-                    "font": {"size": 16, "color": "#ffffff"},
-                },
-                "tickformat": "%d/%m",
-                "tickfont": {"size": 14, "color": "#ffffff"},
-            },
-            row=2,
-            col=1,
-        )
-        figure.update_yaxes(
-            **{
-                **styled_axis("Production"),
-                "title": {
-                    "text": "Production",
-                    "font": {"size": 16, "color": "#ffffff"},
-                },
-                "tickfont": {"size": 14, "color": "#ffffff"},
-            },
-            row=1,
-            col=1,
-        )
-        figure.update_yaxes(
-            **{
-                **styled_axis("Taux CO2 (g/kWh)"),
-                "title": {
-                    "text": "Taux CO2 (g/kWh)",
-                    "font": {"size": 16, "color": "#ffffff"},
-                },
-                "tickfont": {"size": 14, "color": "#ffffff"},
-            },
-            row=2,
-            col=1,
-        )
-        figure.update_annotations(font={"size": 18, "color": "#ffffff"})
-    else:
-        figure.update_layout(
-            xaxis={
-                **styled_axis("Jour"),
-                "title": {"text": "Jour", "font": {"size": 16, "color": "#ffffff"}},
-                "tickformat": "%d/%m",
-                "tickfont": {"size": 16, "color": "#ffffff"},
-            },
-            yaxis={
-                **styled_axis("Production"),
-                "title": {
-                    "text": "Production",
-                    "font": {"size": 16, "color": "#ffffff"},
-                },
-                "tickfont": {"size": 16, "color": "#ffffff"},
-            },
-        )
-
-    return figure
 
 
 BASE_LAYOUT = dict(

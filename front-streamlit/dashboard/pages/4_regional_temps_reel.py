@@ -42,33 +42,13 @@ REGIONS = get_region_options()
 render_sidebar()
 
 default_region = "Île-de-France" if "Île-de-France" in REGIONS else REGIONS[0]
-selected_region = st.selectbox(
-    "Région analysée:",
-    options=REGIONS,
-    index=REGIONS.index(default_region),
-    key="regional_rt_region_choice",
-)
-
 with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-section">🔄 Rafraichissement</div>', unsafe_allow_html=True
+    selected_region = st.selectbox(
+        "Région analysée:",
+        options=REGIONS,
+        index=REGIONS.index(default_region),
+        key="regional_rt_region_choice",
     )
-    if st.button("Actualiser les donnees", key="refresh_reg_rt"):
-        clear_realtime_cache()
-        st.rerun()
-
-    auto_refresh_enabled = st.toggle(
-        "Auto-refresh", value=True, key="toggle_reg_rt_auto"
-    )
-    auto_refresh_minutes = st.selectbox(
-        "Intervalle (minutes)",
-        options=[1, 5, 15],
-        index=1,
-        key="interval_reg_rt_auto",
-    )
-
-if auto_refresh_enabled and st_autorefresh:
-    st_autorefresh(interval=auto_refresh_minutes * 60 * 1000, key="autorefresh_reg_rt")
 
 context = get_regional_realtime_context(selected_region)
 globals().update(context)

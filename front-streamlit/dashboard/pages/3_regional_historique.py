@@ -32,12 +32,13 @@ ENERGY_TYPES = get_energy_types()
 render_sidebar()
 
 default_region = "Île-de-France" if "Île-de-France" in REGIONS else REGIONS[0]
-selected_region = st.selectbox(
-    "Région analysée:",
-    options=REGIONS,
-    index=REGIONS.index(default_region),
-    key="regional_hist_region_select",
-)
+with st.sidebar:
+    selected_region = st.selectbox(
+        "Région analysée:",
+        options=REGIONS,
+        index=REGIONS.index(default_region),
+        key="regional_hist_region_select",
+    )
 
 context = get_regional_historical_context(selected_region)
 globals().update(context)
