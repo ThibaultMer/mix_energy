@@ -1,23 +1,19 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir poetry
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir poetry wheel
 
 COPY pyproject.toml /app/pyproject.toml
 COPY src /app/src
 
-COPY ../predict/pyproject.toml /app/predict/pyproject.toml
-COPY ../predict/src /app/predict/src
+COPY *.whl /app/
 
-RUN cd predict \
-    && poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi\
-    && cd ..
-
+RUN pip --no-cache-dir install *.whl
 
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-interaction --no-ansi

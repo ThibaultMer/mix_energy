@@ -17,6 +17,9 @@ logs
 # gpickle files
 .gpickle
 
+# Distribution folder
+dist/
+*.whl
 
 # Env
 .env
