@@ -11,6 +11,7 @@ from dashboard_share import (
     BASE_LAYOUT,
     SOURCE_COLUMNS,
     apply_global_style,
+    apply_widget_text_style,
     configure_page,
     get_energy_types,
     get_regional_historical_context,
@@ -30,6 +31,7 @@ REGIONS = get_region_options()
 ENERGY_TYPES = get_energy_types()
 
 render_sidebar()
+apply_widget_text_style(color="#000000", font_size="0.95rem")
 
 default_region = "Île-de-France" if "Île-de-France" in REGIONS else REGIONS[0]
 with st.sidebar:
