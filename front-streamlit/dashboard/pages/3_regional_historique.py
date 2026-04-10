@@ -135,26 +135,3 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.plotly_chart(fig3, width="stretch", config={"displayModeBar": False})
-
-
-st.markdown("---")
-st.subheader("Comparaison régionale et nationale")
-
-st.markdown(
-    """
-<div class="chart-card">
-  <div class="chart-title">Lorem ipsum</div>
-  <div class="chart-desc">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-    nisi ut aliquip ex ea commodo consequat.
-    Duis aute irure dolor in reprehenderit in voluptate
-    velit esse cillum dolore eu fugiat nulla pariatur.
-    Excepteur sint occaecat cupidatat non proident,
-    sunt in culpa qui officia deserunt mollit anim id est laborum."
-  </div>
-</div>
-""",
-    unsafe_allow_html=True,
-)

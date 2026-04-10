@@ -104,7 +104,10 @@ if df_chart is not None:
     y_variables = [
         column
         for column in source_columns
-        if column in get_realtime_numeric_columns(df4, extra_excluded={"code_insee_region", region_col})
+        if column
+        in get_realtime_numeric_columns(
+            df4, extra_excluded={"code_insee_region", region_col}
+        )
     ]
     default_y = [
         column
@@ -302,23 +305,3 @@ else:
     st.error(
         "Les données ne sont pas disponibles. Veuillez vérifier le chargement des données."
     )
-
-
-st.markdown(
-    """
-<div class="chart-card">
-  <div class="chart-title">Lorem ipsum</div>
-  <div class="chart-desc">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-    nisi ut aliquip ex ea commodo consequat.
-    Duis aute irure dolor in reprehenderit in voluptate
-    velit esse cillum dolore eu fugiat nulla pariatur.
-    Excepteur sint occaecat cupidatat non proident,
-    sunt in culpa qui officia deserunt mollit anim id est laborum."
-  </div>
-</div>
-""",
-    unsafe_allow_html=True,
-)
