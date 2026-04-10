@@ -20,9 +20,9 @@ PROJECT_ID = os.getenv("PROJECT_ID")
     description="Entraine les modèles de machine learning pour la prédiction de consommation d'énergie.",
     start_date=datetime(2026, 1, 1),
     schedule=MultipleCronTriggerTimetable(
-        "00,15 12 2 * 1-5",
-        "00,15 12 2 * 1",
-        "00,15 12 2 * 1",
+        "10 12 2 * 1-5",
+        "10,15 12 2 * 1",
+        "10 12 2 * 1",
         timezone="Europe/Paris",
     ),
     catchup=False,
