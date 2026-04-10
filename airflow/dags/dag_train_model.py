@@ -32,7 +32,7 @@ def dag_train_model():
     @task(task_id="check_bigquery_connection")
     def check_bigquery_connection() -> None:
         # bq_hook = BigQueryHook(gcp_conn_id=GCP_CONN_ID, use_legacy_sql=False)
-        print("Test")
+        print("Check Bigquery connection")
         # try:
         #     nat_tr_exist = bq_hook.table_exists(
         #         f"{DATASET_ID}_gold", "nat_tr_predi", PROJECT_ID
