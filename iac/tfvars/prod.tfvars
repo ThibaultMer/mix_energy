@@ -1,2 +1,2 @@
 location   = "EU"
-project_id = "silent-region-491307-t1"
+project_id = ${PROJECT_ID}

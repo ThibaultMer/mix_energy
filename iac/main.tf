@@ -132,17 +132,6 @@ resource "google_artifact_registry_repository" "docker" {
   depends_on = [google_project_service.artifact_registry]
 }
 
-resource "google_artifact_registry_repository" "standard" {
-  count         = var.bootstrap_only ? 0 : 1
-  location      = var.artifact_registry_location
-  project       = google_project.mix_energie_gcp.project_id
-  repository_id = "mix-energie-python"
-  description   = "Depot Artifact Registry Python pour les packages du projet."
-  format        = "PYTHON"
-
-  depends_on = [google_project_service.artifact_registry]
-}
-
 resource "google_artifact_registry_repository_iam_member" "airflow_docker_reader" {
   count      = var.bootstrap_only ? 0 : 1
   project    = google_project.mix_energie_gcp.project_id
@@ -329,63 +318,70 @@ resource "google_project_iam_member" "vm_artifact_registry_reader" {
   ]
 }
 
-resource "google_bigquery_dataset" "mix_energie_dataset" {
+resource "google_bigquery_dataset" "dev_mix_energie_dataset" {
   count                      = var.bootstrap_only ? 0 : 1
-  dataset_id                 = "mix_energie_bronze"
+  dataset_id                 = "dev_mix_energie"
   location                   = var.location
-  friendly_name              = "mix-energie-bronze"
-  description                = "Dataset bronze pour le projet mix-energie."
+  friendly_name              = "dev-mix-energie"
+  description                = "Dataset de dev bronze pour le projet mix-energie."
   project                    = google_project.mix_energie_gcp.project_id
 
   depends_on = [google_project_service.bigquery]
 }
 
-resource "google_bigquery_dataset" "silver_dataset_mix_energie" {
+resource "google_bigquery_dataset" "prod_mix_energie_dataset" {
   count                      = var.bootstrap_only ? 0 : 1
-  dataset_id                 = "mix_energie_silver"
+  dataset_id                 = "prod_mix_energie"
   location                   = var.location
-  friendly_name              = "mix-energie-silver"
-  description                = "Dataset silver pour le projet mix-energie."
+  friendly_name              = "prod-mix-energie"
+  description                = "Dataset de prod bronze pour le projet mix-energie."
   project                    = google_project.mix_energie_gcp.project_id
 
   depends_on = [google_project_service.bigquery]
 }
 
-resource "google_bigquery_dataset" "gold_dataset_mix_energie" {
+resource "google_bigquery_dataset" "dev_mix_energie_silver_dataset" {
   count                      = var.bootstrap_only ? 0 : 1
-  dataset_id                 = "mix_energie_gold"
+  dataset_id                 = "dev_mix_energie_silver"
   location                   = var.location
-  friendly_name              = "mix-energie-gold"
-  description                = "Dataset gold pour le projet mix-energie."
+  friendly_name              = "dev-mix-energie-silver"
+  description                = "Dataset de dev silver pour le projet mix-energie."
   project                    = google_project.mix_energie_gcp.project_id
 
   depends_on = [google_project_service.bigquery]
 }
 
-resource "google_bigquery_dataset" "demo_dataset" {
-  count                      = var.bootstrap_only || !var.create_demo_resources ? 0 : 1
-  dataset_id                 = "demo_dataset_${terraform.workspace}"
+resource "google_bigquery_dataset" "prod_mix_energie_silver_dataset" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "prod_mix_energie_silver"
   location                   = var.location
-  friendly_name              = "Demo Dataset ${terraform.workspace}"
-  description                = "Dataset jetable pour demo Terraform."
+  friendly_name              = "prod-mix-energie-silver"
+  description                = "Dataset de prod silver pour le projet mix-energie."
   project                    = google_project.mix_energie_gcp.project_id
 
   depends_on = [google_project_service.bigquery]
 }
 
-resource "google_bigquery_table" "demo_table" {
-  count      = var.bootstrap_only || !var.create_demo_resources ? 0 : 1
-  project    = google_project.mix_energie_gcp.project_id
-  dataset_id = google_bigquery_dataset.demo_dataset[0].dataset_id
-  table_id   = "demo_table_${terraform.workspace}"
-  schema     = <<EOF
-[
-  {"name": "id", "type": "STRING", "mode": "REQUIRED"},
-  {"name": "value", "type": "INTEGER", "mode": "NULLABLE"}
-]
-EOF
+resource "google_bigquery_dataset" "dev_mix_energie_gold_dataset" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "dev_mix_energie_gold"
+  location                   = var.location
+  friendly_name              = "dev-mix-energie-gold"
+  description                = "Dataset de dev gold pour le projet mix-energie."
+  project                    = google_project.mix_energie_gcp.project_id
 
-  depends_on = [google_bigquery_dataset.demo_dataset]
+  depends_on = [google_project_service.bigquery]
+}
+
+resource "google_bigquery_dataset" "prod_mix_energie_gold_dataset" {
+  count                      = var.bootstrap_only ? 0 : 1
+  dataset_id                 = "prod_mix_energie_gold"
+  location                   = var.location
+  friendly_name              = "prod-mix-energie-gold"
+  description                = "Dataset de prod gold pour le projet mix-energie."
+  project                    = google_project.mix_energie_gcp.project_id
+
+  depends_on = [google_project_service.bigquery]
 }
 
 resource "google_compute_instance" "vm_mix_energie" {
