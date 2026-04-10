@@ -31,19 +31,24 @@ PROJECT_ID = os.getenv("PROJECT_ID")
 def dag_train_model():
     @task(task_id="check_bigquery_connection")
     def check_bigquery_connection() -> None:
-        # bq_hook = BigQueryHook(gcp_conn_id=GCP_CONN_ID, use_legacy_sql=False)
+        bq_hook = BigQueryHook(gcp_conn_id=GCP_CONN_ID, use_legacy_sql=False)
         print("Check Bigquery connection")
-        # try:
-        #     nat_tr_exist = bq_hook.table_exists(
-        #         f"{DATASET_ID}_gold", "nat_tr_predi", PROJECT_ID
-        #     )
-        #     reg_tr_exist = bq_hook.table_exists(
-        #         f"{DATASET_ID}_gold", "reg_tr_predi", PROJECT_ID
-        #     )
-        #     if not nat_tr_exist or not reg_tr_exist:
-        #         raise RuntimeError("GOLD Tables not available")
-        # except Exception as exc:
-        #     raise RuntimeError("Connexion BigQuery impossible.") from exc
+
+        try:
+            nat_tr_exist = bq_hook.table_exists(
+                project_id=PROJECT_ID,
+                dataset_id=f"{DATASET_ID}_gold",
+                table_id="nat_tr_predi",
+            )
+            reg_tr_exist = bq_hook.table_exists(
+                project_id=PROJECT_ID,
+                dataset_id=f"{DATASET_ID}_gold",
+                table_id="reg_tr_predi",
+            )
+            if not nat_tr_exist or not reg_tr_exist:
+                raise RuntimeError("GOLD Tables not available")
+        except Exception as exc:
+            raise RuntimeError("Connexion BigQuery impossible.") from exc
 
     @task(task_id="train_reg_model")
     def train_reg_model() -> None:
