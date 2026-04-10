@@ -21,6 +21,12 @@ repos:
     types: [markdown]
     language: system
 
+  - id: codespell predict
+    name: Check spelling with codespell
+    entry: sh -c 'cd predict && poetry run codespell markdown && cd ..'
+    types: [markdown]
+    language: system
+
     # - id: safety
     #  name: safety vulnerability check
     #  entry: poetry run safety scan
