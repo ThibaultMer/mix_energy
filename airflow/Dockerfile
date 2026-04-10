@@ -2,7 +2,7 @@ FROM apache/airflow:3.1.8
 
 WORKDIR /opt/project
 
-
+COPY predict/dist/*.whl /opt/project
 
 # Use numeric UID:GID to avoid buildkit host mapping issues
 # airflow user in apache/airflow:3.1.8 typically has UID 50000, GID 0
@@ -13,6 +13,8 @@ COPY --chown=50000:0 dbt ./dbt
 RUN mkdir -p /home/airflow/.dbt && chown airflow: /home/airflow/.dbt
 
 USER airflow
+
+RUN pip --no-cache-dir install *.whl
 
 COPY dbt/profiles.yml.exemple /home/airflow/.dbt/profiles.yml
 

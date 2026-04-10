@@ -15,7 +15,7 @@ repos:
     #language: system
     #files: .*
 
-  - id: codespell
+  - id: codespell ingest_dbt
     name: Check spelling with codespell
     entry: sh -c 'cd ingest_dbt && poetry run codespell markdown && cd ..'
     types: [markdown]
@@ -24,6 +24,12 @@ repos:
   - id: codespell predict
     name: Check spelling with codespell
     entry: sh -c 'cd predict && poetry run codespell markdown && cd ..'
+    types: [markdown]
+    language: system
+
+  - id: codespell fastapi
+    name: Check spelling with codespell
+    entry: sh -c 'cd fastapi && poetry run codespell markdown && cd ..'
     types: [markdown]
     language: system
 
