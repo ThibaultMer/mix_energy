@@ -1,7 +1,11 @@
 import os
 import google.cloud.storage as storage
 import google.oauth2.service_account as service_account
-from . import get_logger
+
+try:
+    from . import get_logger
+except ImportError:
+    from __init__ import get_logger
 
 
 # -----------------------------------------------------------------------------------------
@@ -16,8 +20,23 @@ def connect_to_bucket() -> storage.Bucket:
     """
 
     # Create the credential used to authenticate
+
     json_credential_file = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     project_id = os.getenv("PROJECT_ID")
+
+    # Si la variable d'environnement n'est pas définie, utiliser le chemin par défaut fourni
+    if not json_credential_file:
+        json_credential_file = os.path.join(
+            os.path.dirname(__file__), "data/meteo/mix-energie-gcp-23501901f9c9.json"
+        )
+        get_logger().warning(
+            f"GOOGLE_APPLICATION_CREDENTIALS non défini, utilisation du chemin local : {json_credential_file}"
+        )
+    if not os.path.exists(json_credential_file):
+        get_logger().error(
+            f"Fichier de credentials introuvable : {json_credential_file}"
+        )
+        return None
 
     credentials = service_account.Credentials.from_service_account_file(
         json_credential_file

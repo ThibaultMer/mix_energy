@@ -1,0 +1,1 @@
+"""Mix Energy FastAPI package."""

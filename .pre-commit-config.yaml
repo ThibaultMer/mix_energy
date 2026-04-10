@@ -17,7 +17,13 @@ repos:
 
   - id: codespell
     name: Check spelling with codespell
-    entry: poetry run codespell markdown
+    entry: sh -c 'cd ingest_dbt && poetry run codespell markdown && cd ..'
+    types: [markdown]
+    language: system
+
+  - id: codespell predict
+    name: Check spelling with codespell
+    entry: sh -c 'cd predict && poetry run codespell markdown && cd ..'
     types: [markdown]
     language: system
 

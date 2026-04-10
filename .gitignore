@@ -1,17 +1,22 @@
-# Python 
+# Python
 .venv/
 .python-version
 .ipynb_checkpoints/
 __pycache__/
 *.pyc
+.cache.sqlite
 
 # Data
 data/
 !data/*.gitkeep
 
-# Models
-models/
-!models/.gitkeep
+#dbt
+dbt/target
+logs
+
+# gpickle files
+.gpickle
+
 
 # Env
 .env
@@ -27,3 +32,7 @@ local/
 mlruns/
 mlartifacts/
 mlflow.db
+
+# Airflow
+airflow/config/
+airflow/logs/

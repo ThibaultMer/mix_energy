@@ -1,0 +1,29 @@
+[project]
+name = "mix-energy-fastapi"
+version = "0.1.0"
+description = "Read-only FastAPI buffer for the Mix Energy BigQuery dataset"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "fastapi>=0.115.12,<1.0.0",
+    "uvicorn[standard]>=0.34.0,<1.0.0",
+    "google-cloud-bigquery>=3.31.0,<4.0.0",
+    "google-auth>=2.38.0,<3.0.0",
+    "python-dotenv>=1.1.0,<2.0.0",
+    "pydantic>=2.11.0,<3.0.0",
+]
+
+[tool.poetry]
+packages = [{ include = "mix_energy_api", from = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+test = [
+    "pytest>=8.3.5,<9.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
