@@ -21,7 +21,7 @@ PROJECT_ID = os.getenv("PROJECT_ID")
     start_date=datetime(2026, 1, 1),
     schedule=MultipleCronTriggerTimetable(
         "10 12 2 * 1-5",
-        "10,15 12 2 * 1",
+        "10 12 2 * 1",
         "10 12 2 * 1",
         timezone="Europe/Paris",
     ),
