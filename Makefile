@@ -45,7 +45,7 @@ build_predict:
 clean_predict:
 	rm -rf ${PWD}/predict/dist
 
-.PHONY: run_local
+.PHONY: build_local_fastapi
 build_local_fastapi: build_predict
 	cp ${PWD}/predict/dist/predict-*-py3-none-any.whl fastapi/;
 	@echo "Build the docker ${IMAGE}"

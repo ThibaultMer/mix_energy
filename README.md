@@ -16,6 +16,9 @@ mix_energy
 ```
 
 ### Structure module ingest_dbt
+
+README [>>](./ingest_dbt/README.md)
+
 ```
 ├── ingest_dbt
 │   ├── README.md
@@ -52,6 +55,8 @@ mix_energy
 
 ### Structure module predict
 
+README [>>](./predict/README.md)
+
 ```
 ├── predict
 │   ├── README.md
@@ -70,6 +75,8 @@ mix_energy
 ```
 
 ### Structure module fastapi
+
+README [>>](./fastapi/README.md)
 
 ```
 ├── fastapi
@@ -91,6 +98,8 @@ mix_energy
 ```
 
 ### Structure pipeline dbt
+
+README [>>](./dbt/README.md)
 
 ```
 ├── dbt
@@ -114,6 +123,8 @@ mix_energy
 
 ### Structure module airflow
 
+README [>>](./airflow/README.md)
+
 ```
 ├── airflow
 │   ├── Dockerfile
@@ -133,6 +144,28 @@ mix_energy
 ```
 
 ### Structure application Streamlit
+
+README [>>](./front-streamlit/README.md)
+
+```
+front-streamlit
+├── README.md
+├── dashboard
+│   ├── background.jpg
+│   ├── dashboard_app.py
+│   ├── dashboard_share.py
+│   ├── data_api_client.py
+│   └── pages
+│       ├── 1_national_historique.py
+│       ├── 2_national_temps_reel.py
+│       ├── 3_regional_historique.py
+│       └── 4_regional_temps_reel.py
+├── poetry.lock
+├── pyproject.toml
+└── streamlit
+    └── config.toml
+```
+
 
 ### Structure des scripts Terraform
 
