@@ -89,7 +89,7 @@ run_local_streamlit:
 	docker run --rm -p 8501:8501 "mix-energie-streamlit"
 
 .PHONY: make_coffee
-make_coffee: build_local_streamlit, build_local_fastapi, build_local_airflow
+coffee: build_local_streamlit, build_local_fastapi, build_local_airflow
 
 # .PHONY: run_cat
 # run_cat: run_local_fastapi,run_local_airflow,run_local_streamlit,start_mlflow_server

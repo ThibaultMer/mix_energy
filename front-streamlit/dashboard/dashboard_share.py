@@ -524,6 +524,16 @@ def load_regional_realtime_data(region: str) -> pd.DataFrame:
     return _normalize_dataframe(pd.DataFrame(rows), table_name=TABLES["table4"])
 
 
+@st.cache_data(ttl=300, show_spinner="Chargement des données moyenne du mois...")
+def load_kpi_data() -> pd.DataFrame:
+    client = FastAPIClient.from_environment()
+    start_date, end_date = _current_month_window()
+    rows = client.load_rows_for_date_range(
+        TABLES["table5"], start_date=start_date, end_date=end_date
+    )
+    return _normalize_dataframe(pd.DataFrame(rows), table_name=TABLES["table5"])
+
+
 @st.cache_data(ttl=300, show_spinner="Chargement des données position...")
 def read_geojson():
     current_path = os.path.dirname(os.path.abspath(__file__))
