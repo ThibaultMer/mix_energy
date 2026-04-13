@@ -99,6 +99,45 @@ class FastAPIClient:
                 f"path={path}, base_url={self.base_url}"
             ) from exc
 
+    def _safe_post_json(self, path: str, params):
+        try:
+            response = requests.post(
+                f"{self.base_url}{path}",
+                params=params,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as exc:
+            response = exc.response
+            status_code = response.status_code if response is not None else "unknown"
+            response_text = ""
+            if response is not None:
+                try:
+                    payload = response.json()
+                    response_text = json.dumps(payload, ensure_ascii=False)
+                except ValueError:
+                    response_text = response.text
+
+            raise RuntimeError(
+                "FastAPI request failed with HTTP error. "
+                f"path={path}, base_url={self.base_url}, status={status_code}, response={response_text}"
+            ) from exc
+        except requests.RequestException as exc:
+            raise RuntimeError(
+                "FastAPI request failed (network/timeout). Check FASTAPI_BASE_URL, API availability, and credentials. "
+                f"path={path}, base_url={self.base_url}"
+            ) from exc
+
+    def predict_national(self):
+        next_conso = self._safe_post_json("/predict/national")
+        return next_conso
+
+    def prediction_region(self, insee_code: int):
+        params = {"code_insee_region": insee_code}
+        next_conso = self._safe_post_json("/predict/region", params=params)
+        return next_conso
+
     def _get_column_map(self, table_name: str) -> dict[str, dict[str, Any]]:
         return {
             str(col.get("name")): col

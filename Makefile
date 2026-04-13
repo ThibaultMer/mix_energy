@@ -56,6 +56,10 @@ build_local_fastapi: build_predict
 build_local_airflow: build_predict
 	docker compose -f airflow/docker-compose.yaml build
 
+.PHONY: build_local_streamlit
+build_local_streamlit:
+	cd ${PWD}/front-streamlit && docker build -t "mix-energie-streamlit" . && cd .. ;
+
 .PHONY: start_mlflow_server
 start_mlflow_server:
 	mlflow server --host=0.0.0.0 --port=5000
@@ -79,6 +83,17 @@ run_local_airflow:
 .PHONY: stop_local_airflow
 stop_local_airflow:
 	docker compose -f airflow/docker-compose.yaml down
+
+.PHONY: run_local_streamlit
+run_local_streamlit:
+	docker run --rm -p 8501:8501 "mix-energie-streamlit"
+
+.PHONY: make_coffee
+make_coffee: build_local_streamlit, build_local_fastapi, build_local_airflow
+
+# .PHONY: run_cat
+# run_cat: run_local_fastapi,run_local_airflow,run_local_streamlit,start_mlflow_server
+
 
 # .PHONY: build_gcp
 # build_gcp:

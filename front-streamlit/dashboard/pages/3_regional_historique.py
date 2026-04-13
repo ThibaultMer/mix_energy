@@ -7,6 +7,7 @@ Page 3: Vision régionale historique et consolidée des données de production d
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+
 from dashboard_share import (
     BASE_LAYOUT,
     SOURCE_COLUMNS,
@@ -17,6 +18,7 @@ from dashboard_share import (
     get_regional_historical_context,
     get_region_options,
     render_sidebar,
+    plot_heatmap,
 )
 
 FONT_COLOR = "#c8e6ff"
@@ -63,6 +65,8 @@ df_reg_cons_agre_j = context.get("df_reg_cons_agre_j")
 if df_reg_cons_agre_j is None:
     st.error("Les données régionales historiques (table3) ne sont pas disponibles.")
     st.stop()
+
+fig4 = plot_heatmap(df_reg_cons_agre_j, context=context, range_color=(5000, 120000))
 
 region_col = (
     "libelle_region" if "libelle_region" in df_reg_cons_agre_j.columns else "region"
@@ -122,6 +126,7 @@ fig3.update_layout(
     height=420,
 )
 
+
 st.markdown(
     """
 <div class="chart-card">
@@ -135,3 +140,4 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.plotly_chart(fig3, width="stretch", config={"displayModeBar": False})
+st.plotly_chart(fig4, width="stretch", config={"displayModeBar": False})
