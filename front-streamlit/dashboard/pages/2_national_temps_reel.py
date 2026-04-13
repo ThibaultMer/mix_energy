@@ -29,6 +29,9 @@ context = get_national_realtime_context()
 globals().update(context)
 render_sidebar()
 
+# TODO verify it works
+# next_conso = get_next_conso_nat()
+
 st.title(
     "Donnees nationales en temps reel de la production d'electricite en France",
     text_alignment="center",
@@ -233,6 +236,21 @@ if df_chart is not None:
                     "tickfont": {"size": 16, "color": "#ffffff"},
                 },
             )
+
+        # TODO check it is working
+        #                 st.markdown(
+        #             f"""
+        # <div class="chart-card">
+        #     <div class="chart-title">⚡ Production nationale et 🟦 CO2 quotidien (30 jours glissants)</div>
+        #   <div class="chart-desc">
+        #         Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
+        #         afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
+        #   </div>
+        #   <p align=right><b>Consommation estimée à venir :</b> {next_conso} MW</p>
+        # </div>
+        # """,
+        #             unsafe_allow_html=True,
+        #         )
 
         st.markdown(
             """

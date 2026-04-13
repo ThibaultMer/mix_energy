@@ -28,6 +28,7 @@ from dashboard_share import (
     get_regional_realtime_context,
     render_sidebar,
     styled_axis,
+    plot_heatmap,
 )
 
 # ─────────────────────────────────────────────
@@ -66,6 +67,10 @@ st.title(
 # ─────────────────────────────────────────────
 df_chart = context.get("df_reg_tr_agre_j")
 
+if df_chart is not None:
+    fig5 = plot_heatmap(
+        df_regions=df_chart, context=context, range_color=(5000, 120000)
+    )
 
 # ─────────────────────────────────────────────
 # CHART 4 — Regional Realtime Time Series (Interactive)
@@ -305,3 +310,6 @@ else:
     st.error(
         "Les données ne sont pas disponibles. Veuillez vérifier le chargement des données."
     )
+
+if fig5 is not None:
+    st.plotly_chart(fig5, use_container_width=True, config={"displayModeBar": False})

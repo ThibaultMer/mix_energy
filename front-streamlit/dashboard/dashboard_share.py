@@ -12,8 +12,12 @@ import base64
 from datetime import date, timedelta
 from pathlib import Path
 
+import os
 import pandas as pd
 import streamlit as st
+import json
+
+import plotly.express as px
 
 from data_api_client import FastAPIClient
 
@@ -520,6 +524,28 @@ def load_regional_realtime_data(region: str) -> pd.DataFrame:
     return _normalize_dataframe(pd.DataFrame(rows), table_name=TABLES["table4"])
 
 
+@st.cache_data(ttl=300, show_spinner="Chargement des données position...")
+def read_geojson():
+    current_path = os.path.dirname(os.path.abspath(__file__))
+
+    with open(os.path.join(current_path, "regions.geojson"), "r") as reg_geo:
+        regions = json.load(reg_geo)
+
+    return regions
+
+
+@st.cache_data(ttl=300, show_spinner="Calcul de prédiction nationale...")
+def get_next_conso_nat():
+    result = FastAPIClient.from_environment().predict_national()
+    return result
+
+
+@st.cache_data(ttl=300, show_spinner="Calcul de prédiction régionale...")
+def get_next_conso_reg(insee_code: int):
+    result = FastAPIClient.from_environment().prediction_region(insee_code)
+    return result
+
+
 def clear_realtime_cache() -> None:
     load_national_realtime_data.clear()
     load_regional_realtime_data.clear()
@@ -725,6 +751,10 @@ def get_regional_historical_context(region: str | None = None) -> dict:
     context = _build_context(df_reg_cons_agre_j, table_key="table3")
     context["df_reg_cons_agre_j"] = df_reg_cons_agre_j
     context["selected_region"] = selected_region
+
+    if "geopos" not in context.keys():
+        context["geopos"] = read_geojson()
+
     return context
 
 
@@ -739,7 +769,52 @@ def get_regional_realtime_context(region: str | None = None) -> dict:
     context = _build_context(df_reg_tr_agre_j, table_key="table4")
     context["df_reg_tr_agre_j"] = df_reg_tr_agre_j
     context["selected_region"] = selected_region
+
+    if "geopos" not in context.keys():
+        context["geopos"] = read_geojson()
+
     return context
+
+
+def ___get_choremap_df(df_regions: pd.Dataframe) -> pd.Dataframe:
+    df_reduced = df_regions.groupby(
+        by=["code_insee_region", "date", "libelle_region"], as_index=False
+    )["consommation"].sum()
+    df_reduced["date"].max()
+    df_reduced = df_reduced[df_reduced.date == df_reduced.date.max()]
+    df_last = df_reduced.drop(columns=["date"])
+    df_last = df_last.rename(columns={"code_insee_region": "code"})
+    return df_last
+
+
+def plot_heatmap(df_regions: pd.DataFrame, context: dict, range_color=tuple):
+    df_rebuilt = ___get_choremap_df(df_regions)
+    regions = context["geopos"]
+
+    fig = px.choropleth_map(
+        df_rebuilt,
+        geojson=regions,
+        locations="code",
+        color="consommation",
+        featureidkey="properties.code",
+        color_continuous_scale="Hot",
+        range_color=range_color,
+        map_style="carto-positron",
+        zoom=4,
+        # center = {"lat": 43.327408, "lon": -1.032999}, Saint-Palais
+        # center = {"lat": 48.866667, "lon": 2.333333}, Paris
+        center={
+            "lat": 47.0,
+            "lon": 1.909000,
+        },  # Autour d'Orléans (lon: 47.902500, lat: 1.909000)
+        opacity=0.5,
+        hover_data=["libelle_region", "consommation"],
+        labels={"consommation": "consommation energie"},
+    )
+
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+
+    return fig
 
 
 def render_sidebar() -> None:
