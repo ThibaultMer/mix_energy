@@ -210,6 +210,8 @@ Puis éditer le fichier **.env** et renseigner chaque variable
 
 > - **build_local_fastapi** : construit en local l'image docker de l'application FastAPI
 > - **build_local_airflow** : construit en local l'image docker de l'application AirFlow
+> - **build_local_streamlit** : construit en local l'image docker de l'application Streamlit
 > - **run_local_fastapi** : démarre le docker de l'application FastAPI en local sur la base des variables d'environnement renseignées
+> - **run_local_streamlit** : démarre l'ensemble des éléments nécessaires pour le front end Streamlit
 > - **run_local_airflow** : démarre l'ensemble des éléments nécessaires pour Airflow
 > - **stop_local_airflow** : arrête l'ensemble des éléments liés à Airflow
