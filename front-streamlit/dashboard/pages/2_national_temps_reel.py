@@ -20,6 +20,7 @@ from dashboard_share import (
     render_page2_sidebar_filters,
     render_sidebar,
     styled_axis,
+    get_next_conso_nat,
 )
 
 configure_page()
@@ -29,8 +30,8 @@ context = get_national_realtime_context()
 globals().update(context)
 render_sidebar()
 
-# TODO verify it works
-# next_conso = get_next_conso_nat()
+# Get the consumption prediction
+next_conso = get_next_conso_nat()
 
 st.title(
     "Donnees nationales en temps reel de la production d'electricite en France",
@@ -237,33 +238,20 @@ if df_chart is not None:
                 },
             )
 
-        # TODO check it is working
-        #                 st.markdown(
-        #             f"""
-        # <div class="chart-card">
-        #     <div class="chart-title">⚡ Production nationale et 🟦 CO2 quotidien (30 jours glissants)</div>
-        #   <div class="chart-desc">
-        #         Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
-        #         afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
-        #   </div>
-        #   <p align=right><b>Consommation estimée à venir :</b> {next_conso} MW</p>
-        # </div>
-        # """,
-        #             unsafe_allow_html=True,
-        #         )
-
         st.markdown(
             """
-<div class="chart-card">
-    <div class="chart-title">⚡ Production nationale et 🟦 CO2 quotidien (30 jours glissants)</div>
-  <div class="chart-desc">
-        Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
-        afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
-  </div>
-</div>
-""",
+        <div class="chart-card">
+            <div class="chart-title">⚡ Production nationale et 🟦 CO2 quotidien (30 jours glissants)</div>
+          <div class="chart-desc">
+                Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
+                afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
+          </div>
+          <p align=right><b>Consommation estimée à venir :</b> {:.2f} MW</p>
+        </div>
+        """.format(next_conso),
             unsafe_allow_html=True,
         )
+
         st.plotly_chart(
             fig2, use_container_width=True, config={"displayModeBar": False}
         )

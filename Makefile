@@ -88,8 +88,13 @@ stop_local_airflow:
 run_local_streamlit:
 	docker run --rm -p 8501:8501 "mix-energie-streamlit"
 
-.PHONY: make_coffee
-coffee: build_local_streamlit, build_local_fastapi, build_local_airflow
+.PHONY: coffee
+coffee: build_local_streamlit build_local_fastapi build_local_airflow
+
+.PHONY: spring_clean
+spring_clean: clean_predict stop_local_airflow
+	docker stop $(docker ps -a -q)
+	yes | docker system prune -a
 
 # .PHONY: run_cat
 # run_cat: run_local_fastapi,run_local_airflow,run_local_streamlit,start_mlflow_server

@@ -215,3 +215,6 @@ Puis éditer le fichier **.env** et renseigner chaque variable
 > - **run_local_streamlit** : démarre l'ensemble des éléments nécessaires pour le front end Streamlit
 > - **run_local_airflow** : démarre l'ensemble des éléments nécessaires pour Airflow
 > - **stop_local_airflow** : arrête l'ensemble des éléments liés à Airflow
+
+### Commandes spéciales
+> - **coffee** : construit tous les modules en local
