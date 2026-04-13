@@ -29,6 +29,7 @@ from dashboard_share import (
     render_sidebar,
     styled_axis,
     plot_heatmap,
+    get_next_conso_reg,
 )
 
 # ─────────────────────────────────────────────
@@ -56,6 +57,7 @@ with st.sidebar:
 context = get_regional_realtime_context(selected_region)
 globals().update(context)
 
+
 st.title(
     "Données régionales en temps réel de la production d'électricité en France",
     text_alignment="center",
@@ -66,6 +68,8 @@ st.title(
 # LOAD DATA
 # ─────────────────────────────────────────────
 df_chart = context.get("df_reg_tr_agre_j")
+
+next_conso = get_next_conso_reg(df_chart["code_insee_region"])
 
 if df_chart is not None:
     fig5 = plot_heatmap(
@@ -295,8 +299,9 @@ if df_chart is not None:
     Les deux graphiques sont affiches l'un au dessus de l'autre avec la meme largeur,
     afin de faciliter la comparaison entre la production d'electricite et le taux de CO2.
   </div>
+  <p align=right><b>Consommation estimée à venir :</b> {:.2f} MW</p>
 </div>
-""",
+""".format(next_conso),
             unsafe_allow_html=True,
         )
         st.plotly_chart(

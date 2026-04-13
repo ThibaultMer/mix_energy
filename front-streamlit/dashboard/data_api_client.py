@@ -130,12 +130,12 @@ class FastAPIClient:
             ) from exc
 
     def predict_national(self):
-        next_conso = self._safe_post_json("/predict/national")
+        next_conso = self._safe_post_json(path="/predict/national", params={})
         return next_conso
 
     def prediction_region(self, insee_code: int):
         params = {"code_insee_region": insee_code}
-        next_conso = self._safe_post_json("/predict/region", params=params)
+        next_conso = self._safe_post_json(path="/predict/region", params=params)
         return next_conso
 
     def _get_column_map(self, table_name: str) -> dict[str, dict[str, Any]]:
