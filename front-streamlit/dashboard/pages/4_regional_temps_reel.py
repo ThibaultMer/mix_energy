@@ -210,7 +210,7 @@ if df_chart is not None:
             plot_bgcolor=BASE_LAYOUT.get("plot_bgcolor"),
             font=BASE_LAYOUT.get("font"),
             title={
-                "text": "Production regionale d'electricite et taux de CO2 - 30 derniers jours glissants",
+                "text": "Production regionale d'electricite et taux de CO2",
                 "x": 0.5,
                 "xanchor": "center",
                 "y": 0.98,

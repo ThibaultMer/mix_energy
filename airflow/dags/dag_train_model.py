@@ -56,7 +56,7 @@ def dag_train_model():
         bq_client = bq_hook.get_client(project_id=PROJECT_ID)
 
         try:
-            train(bqclient=bq_client, is_national=True)
+            train(bqclient=bq_client, is_national=False)
         except Exception as exc:
             raise RuntimeError(
                 "Echec de l'entrainement du modèle pour les régions"
@@ -68,7 +68,7 @@ def dag_train_model():
         bq_client = bq_hook.get_client(project_id=PROJECT_ID)
 
         try:
-            train(bqclient=bq_client, is_national=False)
+            train(bqclient=bq_client, is_national=True)
         except Exception as exc:
             raise RuntimeError(
                 "Echec de l'entrainement du modèle pour les régions"

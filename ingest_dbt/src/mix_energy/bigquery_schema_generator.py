@@ -82,6 +82,8 @@ def _resolve_eco2mix_type(column_name: Any, dtype: Any) -> str:
         return "STRING"
     if "libelle_region" in col_str or "nature" in col_str or "perimetre" in col_str:
         return "STRING"
+    if "tch_nucleaire" in col_str:
+        return "FLOAT"
     if pd.api.types.is_bool_dtype(dtype):
         return "BOOLEAN"
     if pd.api.types.is_integer_dtype(dtype):

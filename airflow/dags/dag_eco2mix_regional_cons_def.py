@@ -7,7 +7,6 @@ from typing import Any
 from airflow.sdk import dag, task
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.timetables.trigger import MultipleCronTriggerTimetable
-from airflow.providers.standard.operators.bash import BashOperator
 
 from mix_energy.bucket_to_bigquery_airflow import run_transfer as _run_transfer
 from mix_energy.eco2mix_ingest import retrieve_csv as _retrieve_csv
@@ -68,6 +67,13 @@ def dag_eco2mix_regional_cons_def():
     def transfer_csv_from_bucket_to_bigquery(file_prefix: str) -> None:
         _run_transfer(file_prefix=file_prefix, gcp_conn_id=GCP_CONN_ID)
 
+    @task.bash(task_id="dbt_eco2mix_regional_cons_def")
+    def dbt_reg_cons_def():
+        return f"""
+        cd {DBT_DIR} &&
+        dbt run --select eco2mix_regional_cons_def_histo+ --target prod
+        """
+
     check_bucket_connection_task: Any = check_bucket_connection()
     ingest_csv_to_bucket_task: Any = ingest_csv_to_bucket(
         bucket_name=check_bucket_connection_task,
@@ -76,14 +82,7 @@ def dag_eco2mix_regional_cons_def():
     transfer_csv_from_bucket_to_bigquery_task: Any = (
         transfer_csv_from_bucket_to_bigquery(file_prefix=FILE_PREFIX)
     )
-
-    dbt_eco2mix_regional_cons_def = BashOperator(
-        task_id="dbt_eco2mix_regional_cons_def",
-        bash_command=f"""
-        cd {DBT_DIR} &&
-        dbt run --select eco2mix_regional_cons_def_histo+ --target prod
-        """,
-    )
+    dbt_eco2mix_regional_cons_def: Any = dbt_reg_cons_def()
 
     (
         check_bucket_connection_task
