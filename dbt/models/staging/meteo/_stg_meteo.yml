@@ -1,0 +1,192 @@
+models:
+  - name: stg_meteo_paris
+    description: Informations météo pour la ville de Paris
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_lyon
+    description: Informations météo pour la ville de Lyon
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_lille
+    description: Informations météo pour la ville de Lille
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_dijon
+    description: Informations météo pour la ville de Dijon
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_rennes
+    description: Informations météo pour la ville de Rennes
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_orleans
+    description: Informations météo pour la ville d'Orléans
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_strasbourg
+    description: Informations météo pour la ville de Strasbourg
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_caen
+    description: Informations météo pour la ville de Caen
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_bordeaux
+    description: Informations météo pour la ville de Bordeaux
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_toulouse
+    description: Informations météo pour la ville de Toulouse
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_marseille
+    description: Informations météo pour la ville de Marseille
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)
+
+  - name: stg_meteo_nantes
+    description: Informations météo pour la ville de Nantes
+    columns:
+      - name: date_m
+        description: Date considérée
+      - name: day_time
+        description: Période de la journée (Matin/Après-midi/Soir)
+      - name: mean_temp_2m
+        description: Moyenne de la température moyenne à 2m du sol en °C
+      - name: mean_rel_hum_2m
+        description: Moyenne du taux d'humidité relative à 2m du sol (%)
+      - name: mean_wind_speed_10m
+        description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+      - name: mean_evapo
+        description: Moyenne du taux d'évaporation (mm)

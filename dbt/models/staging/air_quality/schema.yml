@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+
+  - name: airqual_source
+    database: "{{ env_var('PROJECT_ID') }}"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: air_quality_paris
+      - name: air_quality_lyon
+      - name: air_quality_lille
+      - name: air_quality_dijon
+      - name: air_quality_rennes
+      - name: air_quality_orleans
+      - name: air_quality_strasbourg
+      - name: air_quality_caen
+      - name: air_quality_bordeaux
+      - name: air_quality_toulouse
+      - name: air_quality_marseille
+      - name: air_quality_nantes

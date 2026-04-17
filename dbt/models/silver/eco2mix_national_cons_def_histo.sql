@@ -27,5 +27,5 @@ taux_co2        AS taux_co2
 FROM {{source('nat_source','eco2mix_national_cons_def')}}
 
 {% if is_incremental() %}
-    WHERE date > (SELECT MAX(date) FROM {{ this }})
+    WHERE date > (SELECT MAX(date) FROM {{ this }}) AND consommation is not NULL
 {% endif %}

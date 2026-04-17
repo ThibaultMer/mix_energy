@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+
+  - name: meteo_source
+    database: "{{ env_var('PROJECT_ID') }}"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: meteo_paris
+      - name: meteo_lyon
+      - name: meteo_lille
+      - name: meteo_dijon
+      - name: meteo_rennes
+      - name: meteo_orleans
+      - name: meteo_strasbourg
+      - name: meteo_caen
+      - name: meteo_bordeaux
+      - name: meteo_toulouse
+      - name: meteo_marseille
+      - name: meteo_nantes

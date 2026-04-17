@@ -1,0 +1,30 @@
+version: 2
+
+seeds:
+  - name: cities
+    description: Liste des villes utilisées pour la météo et la qualité de l'air avec leurs codes INSEE associés
+    config:
+      database: "{{ env_var('PROJECT_ID') }}"
+      column_types:
+        ville: string
+        insee_commune: integer
+        insee_region: integer
+
+    columns:
+      - name: ville
+        description: Nom de la capitale de la région
+        tests:
+        - unique
+        - not_null
+
+      - name: insee_commune
+        description: Code INSEE de la commune
+
+      - name: insee_region
+        description: Code INSEE de la région
+        tests:
+        - unique
+        - accepted_values:
+              arguments:
+                values: [11, 84, 32, 27, 53, 24, 44, 28, 75, 76, 93, 52]
+                quote: false
