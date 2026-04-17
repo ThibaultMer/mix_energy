@@ -15,8 +15,8 @@ FROM
         wind_speed_10m,
         evapotranspiration,
         CASE
-        WHEN time_m >= '00:00:00' AND time_m < '12:00:00' THEN 'Morning'
-        WHEN time_m >= '12:00:00' AND time_m < '20:00:00' THEN 'Afternoon'
+        WHEN time_m >= '05:00:00' AND time_m =< '12:00:00' THEN 'Morning'
+        WHEN time_m > '12:00:00' AND time_m < '20:00:00' THEN 'Afternoon'
         ELSE 'Night'
         END AS day_time
     FROM
