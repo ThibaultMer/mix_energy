@@ -16,11 +16,11 @@ with airqual_paris as (
            A.code_pm25
     FROM {{ref('stg_air_quality_paris')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_paris')}}
-        GROUP BY date_ech, code_zone, date_dif
+        GROUP BY code_zone, date_ech
     ) AS B
-    ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
+    ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_dif = B.last_dif AND A.date_maj = B.last_maj
     ORDER BY date_ech ASC
 ),
 
@@ -38,9 +38,9 @@ airqual_lille as (
            A.code_pm25
     FROM {{ref('stg_air_quality_lille')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_lille')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -60,9 +60,9 @@ airqual_dijon as (
            A.code_pm25
     FROM {{ref('stg_air_quality_dijon')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_dijon')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -82,9 +82,9 @@ airqual_rennes as (
            A.code_pm25
     FROM {{ref('stg_air_quality_rennes')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_rennes')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -104,9 +104,9 @@ airqual_orleans as (
            A.code_pm25
     FROM {{ref('stg_air_quality_orleans')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_orleans')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -126,9 +126,9 @@ airqual_strasbourg as (
            A.code_pm25
     FROM {{ref('stg_air_quality_strasbourg')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_strasbourg')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -148,9 +148,9 @@ airqual_caen as (
            A.code_pm25
     FROM {{ref('stg_air_quality_caen')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_caen')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -170,9 +170,9 @@ airqual_bordeaux as (
            A.code_pm25
     FROM {{ref('stg_air_quality_bordeaux')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_bordeaux')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -192,9 +192,9 @@ airqual_toulouse as (
            A.code_pm25
     FROM {{ref('stg_air_quality_toulouse')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_toulouse')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -214,9 +214,9 @@ airqual_marseille as (
            A.code_pm25
     FROM {{ref('stg_air_quality_marseille')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_marseille')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
@@ -236,9 +236,9 @@ airqual_nantes as (
            A.code_pm25
     FROM {{ref('stg_air_quality_nantes')}} AS A
     INNER JOIN (
-        SELECT date_ech, code_zone, MAX(date_dif) AS last_dif, MAX(date_maj) AS last_maj
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
         FROM {{ref('stg_air_quality_nantes')}}
-        GROUP BY date_ech, code_zone
+        GROUP BY code_zone, date_ech
     ) AS B
     ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_maj = B.last_maj AND A.date_dif = B.last_dif
     ORDER BY date_ech ASC
