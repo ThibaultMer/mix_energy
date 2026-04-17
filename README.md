@@ -169,6 +169,20 @@ front-streamlit
 
 ### Structure des scripts Terraform
 
+```
+iac
+├── auto.tfvars
+├── deploy_full.sh
+├── deploy_gcp_project.sh
+├── main.tf
+├── provider.tf
+├── reset_and_import_bucket.sh
+├── tfvars
+│   ├── dev.tfvars
+│   └── prod.tfvars
+└── variables.tf
+```
+
 ## Configuration environnement de développment
 
 Créer un environnement virtuel
