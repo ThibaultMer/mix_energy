@@ -39,3 +39,8 @@ mlflow.db
 # Airflow
 airflow/config/
 airflow/logs/
+
+# Terraform
+iac/*.tfstate
+iac/*.tfstate.backup
+iac/.terraform/
