@@ -84,21 +84,6 @@ def get_base64_image(path: Path) -> str:
 
 
 def build_bg_css() -> str:
-    bg_image_path = Path(__file__).parent / "background.jpg"
-    bg_b64 = get_base64_image(bg_image_path)
-
-    if bg_b64:
-        return f"""
-    .bg-layer {{
-        position: fixed;
-        inset: 0;
-        background: url("data:image/jpeg;base64,{bg_b64}") center center / cover no-repeat;
-        filter: blur(0.5px) brightness(1);
-        z-index: 0;
-        transform: scale(1.04);
-    }}
-    """
-
     return """
     .bg-layer {
         position: fixed;

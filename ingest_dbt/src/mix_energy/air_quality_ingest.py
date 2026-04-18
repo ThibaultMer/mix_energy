@@ -143,7 +143,7 @@ def get_atmo_index(
         "format": "geojson",
         "date": date_str,
         "date_historique": date_histo,
-        "code_insee": code_insee,
+        "code_zone": code_insee,
         "aasqa": aasqa,
     }
     headers = {"accept": "*/*", "Authorization": f"Bearer {jwt_token}"}
