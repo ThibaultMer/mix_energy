@@ -1,0 +1,469 @@
+
+models:
+  - name: stg_air_quality_paris
+    description: Indices de qualité de l'air pour la ville de Paris
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_lyon
+    description: Indices de qualité de l'air pour la ville de Lyon
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_lille
+    description: Indices de qualité de l'air pour la ville de Lille
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_dijon
+    description: Indices de qualité de l'air pour la ville de Dijon
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_rennes
+    description: Indices de qualité de l'air pour la ville de Rennes
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_orleans
+    description: Indices de qualité de l'air pour la ville d'Orléans
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_strasbourg
+    description: Indices de qualité de l'air pour la ville de Strasbourg
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_caen
+    description: Indices de qualité de l'air pour la ville de Caen
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_bordeaux
+    description: Indices de qualité de l'air pour la ville de Bordeaux
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_toulouse
+    description: Indices de qualité de l'air pour la ville de Toulouse
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_marseille
+    description: Indices de qualité de l'air pour la ville de Marseille
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: stg_air_quality_nantes
+    description: Indices de qualité de l'air pour la ville de Nantes
+    columns:
+      - name: insee_code
+        description: >
+          "{{ doc('french_region') }}"
+      - name: date_maj
+        description: Date et heure de la mise à jour
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: date_dif
+        description: Date de diffusion de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_zone
+        description: Code commune INSEE
+      - name: code_no2
+        description: >
+         Indice de NO2
+         "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"

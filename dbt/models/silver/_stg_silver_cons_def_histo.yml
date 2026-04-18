@@ -1,0 +1,156 @@
+version: 2
+
+models:
+  - name: eco2mix_national_cons_def_histo
+    description: Table holding the national consolidated consumption and production of energy data
+    columns:
+      - name: perimetre
+        description: The country where the measure is done
+      - name: nature
+        description: The type of data (real time or consolidated)
+      - name: date
+        description: Date of the measurement
+      - name: heure
+        description: Time of the measurement
+      - name: date_heure
+        description: Date and Time of the measurement
+      - name: consommation
+        description: The consumption of energy all sources included
+        data_tests:
+          - not_null
+      - name: prevision_j1
+        description: Forecast of the consumption done the day before
+      - name: prevision_j
+        data_tests:
+          - not_null
+        description: Forecast of the consumption done the same day
+      - name: fioul
+        description: Production of energy using fuel oil
+      - name: charbon
+        description: Production of energy using coal
+      - name: gaz
+        description: Production of energy using gaz
+      - name: nucleaire
+        description: Production of energy using nuclear reaction
+      - name: eolien
+        description: Production of energy using wind turbine
+      - name: solaire
+        description: Production of energy using solar cells
+      - name: hydraulique
+        description: Production of energy using hydraulic system
+      - name: pompage
+        description: Production of energy using pumping
+      - name: bioenergies
+        description: Production of energy using bio sources
+      - name: ech_physiques
+        description: All the physical exchange of energy with the nearest countries
+      - name: taux_co2
+        description: CO2 level
+
+  - name: eco2mix_regional_cons_def_histo
+    description: Table contenant par région la consommation réalisée et consolidée ainsi que la production par filière
+    columns:
+    - name: code_insee_region
+      description: Code INSEE de la région "{{ doc('french_region') }}"
+    - name: libelle_region
+      description: Nom de la région
+    - name: nature
+      description: Nature de la données (temps réelle ou consolidée)
+    - name: date
+      description: Date de la prise de mesure
+    - name: heure
+      description: Heure de la prise de mesure
+    - name: date_heure
+      description: Date et heure de la prise de mesure
+    - name: consommation
+      description: Consommation réalisée
+    - name: thermique
+      description: Production via des systèmes thermiques
+    - name: nucleaire
+      description: Production par centrales nucléaires
+    - name: eolien
+      description: Production d'énergie éolienne
+    - name: solaire
+      description: Production via panneaux solaires
+    - name: hydraulique
+      description: Production par systèmes hydrauliques
+    - name: pompage
+      description: La consommation des pompes dans les Stations de Transfert d'Energie par Pompage (STEP).
+    - name: bioenergies
+      description: Production d'énergie via biomasse
+    - name: ech_physiques
+      description: Le solde des échanges physiques avec les régions limitrophes.
+    - name: tco_thermique
+      description:  le Taux de COuverture (TCO) de la filière thermique par région
+    - name: tch_thermique
+      description: Taux de CHarge (TCH) ou facteur de charge (FC) de la filière thermique par région
+    - name: tco_nucleaire
+      description: le Taux de COuverture (TCO) de la filière nucléaire par région
+    - name: tch_nucleaire
+      description: Taux de CHarge (TCH) ou facteur de charge (FC) de la filière nucléaire par région
+    - name: tco_eolien
+      description: le Taux de COuverture (TCO) de la filière éolienne par région
+    - name: tch_eolien
+      description: Taux de CHarge (TCH) ou facteur de charge (FC) de la filière éolienne par région
+    - name: tco_solaire
+      description: le Taux de COuverture (TCO) de la filière solaire par région
+    - name: tch_solaire
+      description: Taux de CHarge (TCH) ou facteur de charge (FC) de la filière solaire par région
+    - name: tco_hydraulique
+      description: le Taux de COuverture (TCO) de la filière hydraulique par région
+    - name: tch_hydraulique
+      description: Taux de CHarge (TCH) ou facteur de charge (FC) de la filière hydraulique par région
+    - name: tco_bioenergies
+      description: le Taux de COuverture (TCO) de la filière bioénergétiques par région
+    - name: tch_bioenergies
+      description:  Taux de CHarge (TCH) ou facteur de charge (FC) de la filière bioénergétiques par région
+
+  - name: airquality_cons_reg_histo
+    description: Regroupement des dernières valeurs d'indice de qualité de l'air de toutes les régions
+    columns:
+      - name: insee_code
+        description: "{{ doc('french_region') }}"
+      - name: date_ech
+        description: Date de valeur de l'indice TU
+      - name: code_qual
+        description: >
+          Indice de qualité
+          "{{ doc('airquality_indice') }}"
+      - name: code_no2
+        description: >
+          Indice de NO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_so2
+        description: >
+          Indice de SO2
+          "{{ doc('airquality_indice') }}"
+      - name: code_o3
+        description: >
+          Indice de O3 (Ozone)
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm10
+        description: >
+          PM10, Les particules fines inférieures à 10 micromètres
+          "{{ doc('airquality_indice') }}"
+      - name: code_pm25
+        description: >
+          PM25, Les particules fines inférieures à 2,5 micromètres
+          "{{ doc('airquality_indice') }}"
+
+  - name: meteo_cons_reg_histo
+    description: Regroupement des informations météo pour toutes les régions
+    columns:
+    - name: insee_region
+      description: "{{ doc('french_region') }}"
+    - name: date_m
+      description: Date considérée
+    - name: day_time
+      description: Période de la journée (Matin/Après-midi/Soir)
+    - name: mean_temp_2m
+      description: Moyenne de la température moyenne à 2m du sol en °C
+    - name: mean_rel_hum_2m
+      description: Moyenne du taux d'humidité relative à 2m du sol (%)
+    - name: mean_wind_speed_10m
+      description: Moyenne de la vitesse du vent à 10m au dessus du sol (km/h)
+    - name: mean_evapo
+      description: Moyenne du taux d'évaporation (mm)

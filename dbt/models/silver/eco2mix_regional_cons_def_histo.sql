@@ -35,5 +35,5 @@ SAFE_CAST(tch_bioenergies AS FLOAT64)    AS tch_bioenergies
 FROM {{source('reg_source','eco2mix_regional_cons_def')}}
 
 {% if is_incremental() %}
-    WHERE date > (SELECT MAX(date) FROM {{ this }})
+    WHERE date > (SELECT MAX(date) FROM {{ this }}) AND consommation is not NULL
 {% endif %}
