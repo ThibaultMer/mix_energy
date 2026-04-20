@@ -1,5 +1,6 @@
 {{ config(
     alias='airquality_cons_reg_histo',
+    materialized='incremental',
 ) }}
 
 with airqual_paris as (
@@ -244,6 +245,28 @@ airqual_nantes as (
     ORDER BY date_ech ASC
 ),
 
+with airqual_lyon as (
+    SELECT A.insee_code,
+           A.code_zone,
+           A.date_maj,
+           A.date_ech,
+           A.date_dif,
+           A.code_qual,
+           A.code_no2,
+           A.code_so2,
+           A.code_o3,
+           A.code_pm10,
+           A.code_pm25
+    FROM {{ref('stg_air_quality_lyon')}} AS A
+    INNER JOIN (
+        SELECT date_ech, code_zone, MAX(date_maj) AS last_maj, MAX(date_dif) AS last_dif
+        FROM {{ref('stg_air_quality_lyon')}}
+        GROUP BY code_zone, date_ech
+    ) AS B
+    ON A.code_zone = B.code_zone AND A.date_ech = B.date_ech AND A.date_dif = B.last_dif AND A.date_maj = B.last_maj
+    ORDER BY date_ech ASC
+),
+
 final as (
     SELECT * FROM airqual_paris
     UNION ALL
@@ -266,6 +289,8 @@ final as (
     SELECT * FROM airqual_marseille
     UNION ALL
     SELECT * FROM airqual_nantes
+    UNION ALL
+    SELECT * FROM airqual_lyon
 )
 
 SELECT * FROM final

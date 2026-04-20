@@ -1,5 +1,6 @@
 {{ config(
     alias='meteo_cons_reg_histo',
+    materialized='incremental',
 ) }}
 
 with meteo_paris as (
